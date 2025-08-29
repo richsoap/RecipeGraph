@@ -4,13 +4,57 @@ package api
 
 import (
 	"context"
+	"database/sql"
+	"database/sql/driver"
 	"fmt"
 )
 
+type RecipeItemType int64
+
+const (
+	RecipeItemType_INPUT  RecipeItemType = 1
+	RecipeItemType_OUTPUT RecipeItemType = 2
+)
+
+func (p RecipeItemType) String() string {
+	switch p {
+	case RecipeItemType_INPUT:
+		return "INPUT"
+	case RecipeItemType_OUTPUT:
+		return "OUTPUT"
+	}
+	return "<UNSET>"
+}
+
+func RecipeItemTypeFromString(s string) (RecipeItemType, error) {
+	switch s {
+	case "INPUT":
+		return RecipeItemType_INPUT, nil
+	case "OUTPUT":
+		return RecipeItemType_OUTPUT, nil
+	}
+	return RecipeItemType(0), fmt.Errorf("not a valid RecipeItemType string")
+}
+
+func RecipeItemTypePtr(v RecipeItemType) *RecipeItemType { return &v }
+func (p *RecipeItemType) Scan(value interface{}) (err error) {
+	var result sql.NullInt64
+	err = result.Scan(value)
+	*p = RecipeItemType(result.Int64)
+	return
+}
+
+func (p *RecipeItemType) Value() (driver.Value, error) {
+	if p == nil {
+		return nil, nil
+	}
+	return int64(*p), nil
+}
+
 // Common response structure
 type BaseResponse struct {
-	Code    int32  `thrift:"code,1" form:"code" json:"code" query:"code"`
-	Message string `thrift:"message,2" form:"message" json:"message" query:"message"`
+	Code    int32  `thrift:"code,1,required" form:"code,required" json:"code,required" query:"code,required"`
+	Message string `thrift:"message,2,required" form:"message,required" json:"message,required" query:"message,required"`
 }
 
 func NewBaseResponse() *BaseResponse {
@@ -37,10 +81,10 @@ func (p *BaseResponse) String() string {
 
 // Item related structures
 type Item struct {
-	ID        int64  `thrift:"id,1" form:"id" json:"id" query:"id"`
-	Name      string `thrift:"name,2" form:"name" json:"name" query:"name"`
-	CreatedAt string `thrift:"created_at,3" form:"created_at" json:"created_at" query:"created_at"`
-	UpdatedAt string `thrift:"updated_at,4" form:"updated_at" json:"updated_at" query:"updated_at"`
+	ID        int64  `thrift:"id,1,required" form:"id,required" json:"id,required" query:"id,required"`
+	Name      string `thrift:"name,2,required" form:"name,required" json:"name,required" query:"name,required"`
+	CreatedAt string `thrift:"created_at,3,required" form:"created_at,required" json:"created_at,required" query:"created_at,required"`
+	UpdatedAt string `thrift:"updated_at,4,required" form:"updated_at,required" json:"updated_at,required" query:"updated_at,required"`
 }
 
 func NewItem() *Item {
@@ -74,7 +118,7 @@ func (p *Item) String() string {
 }
 
 type CreateItemReq struct {
-	Name string `thrift:"name,1" form:"name" json:"name"`
+	Name string `thrift:"name,1,required" form:"name,required" json:"name,required"`
 }
 
 func NewCreateItemReq() *CreateItemReq {
@@ -96,8 +140,8 @@ func (p *CreateItemReq) String() string {
 }
 
 type CreateItemResp struct {
-	Base *BaseResponse `thrift:"base,1" form:"base" json:"base" query:"base"`
-	Data *Item         `thrift:"data,2" form:"data" json:"data" query:"data"`
+	Base *BaseResponse `thrift:"base,1,required" form:"base,required" json:"base,required" query:"base,required"`
+	Data *Item         `thrift:"data,2,required" form:"data,required" json:"data,required" query:"data,required"`
 }
 
 func NewCreateItemResp() *CreateItemResp {
@@ -141,7 +185,7 @@ func (p *CreateItemResp) String() string {
 }
 
 type GetItemReq struct {
-	ID int64 `thrift:"id,1" json:"id" path:"id"`
+	ID int64 `thrift:"id,1,required" json:"id,required" path:"id,required"`
 }
 
 func NewGetItemReq() *GetItemReq {
@@ -163,8 +207,8 @@ func (p *GetItemReq) String() string {
 }
 
 type GetItemResp struct {
-	Base *BaseResponse `thrift:"base,1" form:"base" json:"base" query:"base"`
-	Data *Item         `thrift:"data,2" form:"data" json:"data" query:"data"`
+	Base *BaseResponse `thrift:"base,1,required" form:"base,required" json:"base,required" query:"base,required"`
+	Data *Item         `thrift:"data,2,required" form:"data,required" json:"data,required" query:"data,required"`
 }
 
 func NewGetItemResp() *GetItemResp {
@@ -208,8 +252,8 @@ func (p *GetItemResp) String() string {
 }
 
 type UpdateItemReq struct {
-	ID   int64  `thrift:"id,1" json:"id" path:"id"`
-	Name string `thrift:"name,2" form:"name" json:"name"`
+	ID   int64  `thrift:"id,1,required" json:"id,required" path:"id,required"`
+	Name string `thrift:"name,2,required" form:"name,required" json:"name,required"`
 }
 
 func NewUpdateItemReq() *UpdateItemReq {
@@ -235,8 +279,8 @@ func (p *UpdateItemReq) String() string {
 }
 
 type UpdateItemResp struct {
-	Base *BaseResponse `thrift:"base,1" form:"base" json:"base" query:"base"`
-	Data *Item         `thrift:"data,2" form:"data" json:"data" query:"data"`
+	Base *BaseResponse `thrift:"base,1,required" form:"base,required" json:"base,required" query:"base,required"`
+	Data *Item         `thrift:"data,2,required" form:"data,required" json:"data,required" query:"data,required"`
 }
 
 func NewUpdateItemResp() *UpdateItemResp {
@@ -280,7 +324,7 @@ func (p *UpdateItemResp) String() string {
 }
 
 type DeleteItemReq struct {
-	ID int64 `thrift:"id,1" json:"id" path:"id"`
+	ID int64 `thrift:"id,1,required" json:"id,required" path:"id,required"`
 }
 
 func NewDeleteItemReq() *DeleteItemReq {
@@ -302,7 +346,7 @@ func (p *DeleteItemReq) String() string {
 }
 
 type DeleteItemResp struct {
-	Base *BaseResponse `thrift:"base,1" form:"base" json:"base" query:"base"`
+	Base *BaseResponse `thrift:"base,1,required" form:"base,required" json:"base,required" query:"base,required"`
 }
 
 func NewDeleteItemResp() *DeleteItemResp {
@@ -392,9 +436,9 @@ func (p *ListItemsReq) String() string {
 }
 
 type ListItemsResp struct {
-	Base  *BaseResponse `thrift:"base,1" form:"base" json:"base" query:"base"`
-	Data  []*Item       `thrift:"data,2" form:"data" json:"data" query:"data"`
-	Total int32         `thrift:"total,3" form:"total" json:"total" query:"total"`
+	Base  *BaseResponse `thrift:"base,1,required" form:"base,required" json:"base,required" query:"base,required"`
+	Data  []*Item       `thrift:"data,2,required" form:"data,required" json:"data,required" query:"data,required"`
+	Total int32         `thrift:"total,3,required" form:"total,required" json:"total,required" query:"total,required"`
 }
 
 func NewListItemsResp() *ListItemsResp {
@@ -434,12 +478,12 @@ func (p *ListItemsResp) String() string {
 
 // Recipe related structures
 type Recipe struct {
-	ID         int64   `thrift:"id,1" form:"id" json:"id" query:"id"`
-	Space      int64   `thrift:"space,2" form:"space" json:"space" query:"space"`
-	ItemID     int64   `thrift:"item_id,3" form:"item_id" json:"item_id" query:"item_id"`
-	Efficiency float64 `thrift:"efficiency,4" form:"efficiency" json:"efficiency" query:"efficiency"`
-	CreatedAt  string  `thrift:"created_at,5" form:"created_at" json:"created_at" query:"created_at"`
-	UpdatedAt  string  `thrift:"updated_at,6" form:"updated_at" json:"updated_at" query:"updated_at"`
+	ID         int64   `thrift:"id,1,required" form:"id,required" json:"id,required" query:"id,required"`
+	Space      int64   `thrift:"space,2,required" form:"space,required" json:"space,required" query:"space,required"`
+	ItemID     int64   `thrift:"item_id,3,required" form:"item_id,required" json:"item_id,required" query:"item_id,required"`
+	Efficiency float64 `thrift:"efficiency,4,required" form:"efficiency,required" json:"efficiency,required" query:"efficiency,required"`
+	CreatedAt  string  `thrift:"created_at,5,required" form:"created_at,required" json:"created_at,required" query:"created_at,required"`
+	UpdatedAt  string  `thrift:"updated_at,6,required" form:"updated_at,required" json:"updated_at,required" query:"updated_at,required"`
 }
 
 func NewRecipe() *Recipe {
@@ -481,14 +525,14 @@ func (p *Recipe) String() string {
 }
 
 type RecipeItem struct {
-	ID        int64  `thrift:"id,1" form:"id" json:"id" query:"id"`
-	RecipeID  int64  `thrift:"recipe_id,2" form:"recipe_id" json:"recipe_id" query:"recipe_id"`
-	Space     int64  `thrift:"space,3" form:"space" json:"space" query:"space"`
-	Type      int32  `thrift:"type,4" form:"type" json:"type" query:"type"`
-	ItemID    int64  `thrift:"item_id,5" form:"item_id" json:"item_id" query:"item_id"`
-	Count     int32  `thrift:"count,6" form:"count" json:"count" query:"count"`
-	CreatedAt string `thrift:"created_at,7" form:"created_at" json:"created_at" query:"created_at"`
-	UpdatedAt string `thrift:"updated_at,8" form:"updated_at" json:"updated_at" query:"updated_at"`
+	ID        int64          `thrift:"id,1,required" form:"id,required" json:"id,required" query:"id,required"`
+	RecipeID  int64          `thrift:"recipe_id,2,required" form:"recipe_id,required" json:"recipe_id,required" query:"recipe_id,required"`
+	Space     int64          `thrift:"space,3,required" form:"space,required" json:"space,required" query:"space,required"`
+	Type      RecipeItemType `thrift:"type,4,required" form:"type,required" json:"type,required" query:"type,required"`
+	ItemID    int64          `thrift:"item_id,5,required" form:"item_id,required" json:"item_id,required" query:"item_id,required"`
+	Count     int32          `thrift:"count,6,required" form:"count,required" json:"count,required" query:"count,required"`
+	CreatedAt string         `thrift:"created_at,7,required" form:"created_at,required" json:"created_at,required" query:"created_at,required"`
+	UpdatedAt string         `thrift:"updated_at,8,required" form:"updated_at,required" json:"updated_at,required" query:"updated_at,required"`
 }
 
 func NewRecipeItem() *RecipeItem {
@@ -510,7 +554,7 @@ func (p *RecipeItem) GetSpace() (v int64) {
 	return p.Space
 }
 
-func (p *RecipeItem) GetType() (v int32) {
+func (p *RecipeItem) GetType() (v RecipeItemType) {
 	return p.Type
 }
 
@@ -538,10 +582,10 @@ func (p *RecipeItem) String() string {
 }
 
 type CreateRecipeReq struct {
-	Space      int64         `thrift:"space,1" form:"space" json:"space"`
-	ItemID     int64         `thrift:"item_id,2" form:"item_id" json:"item_id"`
-	Efficiency float64       `thrift:"efficiency,3" form:"efficiency" json:"efficiency"`
-	Items      []*RecipeItem `thrift:"items,4" form:"items" json:"items"`
+	Space      int64         `thrift:"space,1,required" form:"space,required" json:"space,required"`
+	ItemID     int64         `thrift:"item_id,2,required" form:"item_id,required" json:"item_id,required"`
+	Efficiency float64       `thrift:"efficiency,3,required" form:"efficiency,required" json:"efficiency,required"`
+	Items      []*RecipeItem `thrift:"items,4,required" form:"items,required" json:"items,required"`
 }
 
 func NewCreateRecipeReq() *CreateRecipeReq {
@@ -575,8 +619,8 @@ func (p *CreateRecipeReq) String() string {
 }
 
 type CreateRecipeResp struct {
-	Base *BaseResponse `thrift:"base,1" form:"base" json:"base" query:"base"`
-	Data *Recipe       `thrift:"data,2" form:"data" json:"data" query:"data"`
+	Base *BaseResponse `thrift:"base,1,required" form:"base,required" json:"base,required" query:"base,required"`
+	Data *Recipe       `thrift:"data,2,required" form:"data,required" json:"data,required" query:"data,required"`
 }
 
 func NewCreateRecipeResp() *CreateRecipeResp {
@@ -620,7 +664,7 @@ func (p *CreateRecipeResp) String() string {
 }
 
 type GetRecipeReq struct {
-	ID int64 `thrift:"id,1" json:"id" path:"id"`
+	ID int64 `thrift:"id,1,required" json:"id,required" path:"id,required"`
 }
 
 func NewGetRecipeReq() *GetRecipeReq {
@@ -642,9 +686,9 @@ func (p *GetRecipeReq) String() string {
 }
 
 type GetRecipeResp struct {
-	Base  *BaseResponse `thrift:"base,1" form:"base" json:"base" query:"base"`
-	Data  *Recipe       `thrift:"data,2" form:"data" json:"data" query:"data"`
-	Items []*RecipeItem `thrift:"items,3" form:"items" json:"items" query:"items"`
+	Base  *BaseResponse `thrift:"base,1,required" form:"base,required" json:"base,required" query:"base,required"`
+	Data  *Recipe       `thrift:"data,2,required" form:"data,required" json:"data,required" query:"data,required"`
+	Items []*RecipeItem `thrift:"items,3,required" form:"items,required" json:"items,required" query:"items,required"`
 }
 
 func NewGetRecipeResp() *GetRecipeResp {
@@ -692,7 +736,7 @@ func (p *GetRecipeResp) String() string {
 }
 
 type UpdateRecipeReq struct {
-	ID         int64         `thrift:"id,1" json:"id" path:"id"`
+	ID         int64         `thrift:"id,1,required" json:"id,required" path:"id,required"`
 	Space      *int64        `thrift:"space,2,optional" form:"space" json:"space,omitempty"`
 	ItemID     *int64        `thrift:"item_id,3,optional" form:"item_id" json:"item_id,omitempty"`
 	Efficiency *float64      `thrift:"efficiency,4,optional" form:"efficiency" json:"efficiency,omitempty"`
@@ -770,8 +814,8 @@ func (p *UpdateRecipeReq) String() string {
 }
 
 type UpdateRecipeResp struct {
-	Base *BaseResponse `thrift:"base,1" form:"base" json:"base" query:"base"`
-	Data *Recipe       `thrift:"data,2" form:"data" json:"data" query:"data"`
+	Base *BaseResponse `thrift:"base,1,required" form:"base,required" json:"base,required" query:"base,required"`
+	Data *Recipe       `thrift:"data,2,required" form:"data,required" json:"data,required" query:"data,required"`
 }
 
 func NewUpdateRecipeResp() *UpdateRecipeResp {
@@ -815,7 +859,7 @@ func (p *UpdateRecipeResp) String() string {
 }
 
 type DeleteRecipeReq struct {
-	ID int64 `thrift:"id,1" json:"id" path:"id"`
+	ID int64 `thrift:"id,1,required" json:"id,required" path:"id,required"`
 }
 
 func NewDeleteRecipeReq() *DeleteRecipeReq {
@@ -837,7 +881,7 @@ func (p *DeleteRecipeReq) String() string {
 }
 
 type DeleteRecipeResp struct {
-	Base *BaseResponse `thrift:"base,1" form:"base" json:"base" query:"base"`
+	Base *BaseResponse `thrift:"base,1,required" form:"base,required" json:"base,required" query:"base,required"`
 }
 
 func NewDeleteRecipeResp() *DeleteRecipeResp {
@@ -941,9 +985,9 @@ func (p *ListRecipesReq) String() string {
 }
 
 type ListRecipesResp struct {
-	Base  *BaseResponse `thrift:"base,1" form:"base" json:"base" query:"base"`
-	Data  []*Recipe     `thrift:"data,2" form:"data" json:"data" query:"data"`
-	Total int32         `thrift:"total,3" form:"total" json:"total" query:"total"`
+	Base  *BaseResponse `thrift:"base,1,required" form:"base,required" json:"base,required" query:"base,required"`
+	Data  []*Recipe     `thrift:"data,2,required" form:"data,required" json:"data,required" query:"data,required"`
+	Total int32         `thrift:"total,3,required" form:"total,required" json:"total,required" query:"total,required"`
 }
 
 func NewListRecipesResp() *ListRecipesResp {
