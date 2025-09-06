@@ -11,30 +11,44 @@ import (
 	api "github.com/richsoap/RecipeCalculator/biz/model/recipe/api"
 	"github.com/richsoap/RecipeCalculator/dal/gen"
 	"github.com/richsoap/RecipeCalculator/dal/model"
+	"github.com/richsoap/RecipeCalculator/errors"
 )
 
-// UpdateItem .
+// UpdateItem 更新物品信息
 // @router /api/v1/items/:id [PUT]
 func UpdateItem(ctx context.Context, c *app.RequestContext) {
 	var err error
 	var req api.UpdateItemReq
+	// 绑定并验证请求参数
 	err = c.BindAndValidate(&req)
 	if err != nil {
 		c.String(consts.StatusBadRequest, err.Error())
 		return
 	}
+
+	resp, herr := DoUpdateItem(ctx, &req)
+	if herr != nil {
+		c.String(herr.HTTPCode(), herr.Error())
+		return
+	}
+
+	c.JSON(consts.StatusOK, resp)
+}
+
+func DoUpdateItem(ctx context.Context, req *api.UpdateItemReq) (*api.UpdateItemResp, *errors.HTTPCodeErr) {
 	m := &model.Item{
 		ID:   req.GetID(),
 		Name: req.GetName(),
 	}
-	_, err = gen.Item.WithContext(ctx).Where(gen.Item.ID.Eq(req.GetID())).Updates(gen.ItemToUpdateMap(m))
+	_, err := gen.Item.WithContext(ctx).Where(gen.Item.ID.Eq(req.GetID())).Updates(gen.ItemToUpdateMap(m))
 	if err != nil {
-		c.String(consts.StatusBadRequest, err.Error())
-		return
+		return nil, &errors.HTTPCodeErr{
+			Code: consts.StatusBadRequest,
+			Err:  err,
+		}
 	}
 
 	resp := new(api.UpdateItemResp)
 	resp.Data = convert.ConvertItemToApi(m)
-
-	c.JSON(consts.StatusOK, resp)
+	return resp, nil
 }

@@ -9,25 +9,39 @@ import (
 	"github.com/cloudwego/hertz/pkg/protocol/consts"
 	api "github.com/richsoap/RecipeCalculator/biz/model/recipe/api"
 	"github.com/richsoap/RecipeCalculator/dal/gen"
+	"github.com/richsoap/RecipeCalculator/errors"
 )
 
-// DeleteItem .
+// DeleteItem 删除物品
 // @router /api/v1/items/:id [DELETE]
 func DeleteItem(ctx context.Context, c *app.RequestContext) {
 	var err error
 	var req api.DeleteItemReq
+	// 绑定并验证请求参数
 	err = c.BindAndValidate(&req)
 	if err != nil {
 		c.String(consts.StatusBadRequest, err.Error())
 		return
 	}
-	_, err = gen.Item.WithContext(ctx).Where(gen.Item.ID.Eq(req.GetID())).Delete()
-	if err != nil {
-		c.String(consts.StatusBadRequest, err.Error())
+
+	resp, herr := DoDeleteItem(ctx, &req)
+	if herr != nil {
+		c.String(herr.HTTPCode(), herr.Error())
 		return
 	}
 
-	resp := new(api.DeleteItemResp)
-
 	c.JSON(consts.StatusOK, resp)
+}
+
+func DoDeleteItem(ctx context.Context, req *api.DeleteItemReq) (*api.DeleteItemResp, *errors.HTTPCodeErr) {
+	_, err := gen.Item.WithContext(ctx).Where(gen.Item.ID.Eq(req.GetID())).Delete()
+	if err != nil {
+		return nil, &errors.HTTPCodeErr{
+			Code: consts.StatusBadRequest,
+			Err:  err,
+		}
+	}
+
+	resp := new(api.DeleteItemResp)
+	return resp, nil
 }

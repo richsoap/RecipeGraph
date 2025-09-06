@@ -13,41 +13,62 @@ import (
 	api "github.com/richsoap/RecipeCalculator/biz/model/recipe/api"
 	"github.com/richsoap/RecipeCalculator/dal/gen"
 	"github.com/richsoap/RecipeCalculator/dal/model"
+	"github.com/richsoap/RecipeCalculator/errors"
 )
 
-// CreateRecipe .
+// CreateRecipe 创建配方
 // @router /api/v1/recipes [POST]
 func CreateRecipe(ctx context.Context, c *app.RequestContext) {
 	var err error
 	var req api.CreateRecipeReq
+	// 绑定并验证请求参数
 	err = c.BindAndValidate(&req)
 	if err != nil {
 		c.String(consts.StatusBadRequest, err.Error())
 		return
 	}
 
+	resp, herr := DoCreateRecipe(ctx, &req)
+	if herr != nil {
+		c.String(herr.HTTPCode(), herr.Error())
+		return
+	}
+
+	c.JSON(consts.StatusOK, resp)
+}
+
+func DoCreateRecipe(ctx context.Context, req *api.CreateRecipeReq) (*api.CreateRecipeResp, *errors.HTTPCodeErr) {
+	// 提取所有相关物品ID
 	ids := gslice.Map(req.GetItems(), (func(item *api.RecipeItem) int64 {
 		return item.GetItem().GetID()
 	}))
 	ids = append(ids, req.GetItemID())
+
+	// 查询所有相关物品
 	items, err := gen.Item.WithContext(ctx).Where(gen.Item.ID.In(ids...)).Find()
 	if err != nil {
-		c.String(consts.StatusBadRequest, err.Error())
-		return
+		return nil, &errors.HTTPCodeErr{
+			Code: consts.StatusBadRequest,
+			Err:  err,
+		}
 	}
+
+	// 构建物品ID映射
 	itemMap := gslice.ToMapValues(items, func(item *model.Item) int64 {
 		return item.ID
 	})
+
+	// 验证所有物品是否存在
 	for _, id := range ids {
 		if _, ok := itemMap[id]; !ok {
-			c.String(consts.StatusBadRequest, "recipe item not found")
-			return
+			return nil, &errors.HTTPCodeErr{
+				Code: consts.StatusBadRequest,
+				Err:  fmt.Errorf("recipe item not found: %d", id),
+			}
 		}
 	}
-	if _, ok := itemMap[req.GetItemID()]; !ok {
-		c.String(consts.StatusBadRequest, "recipe worker not found")
-		return
-	}
+
+	// 创建配方记录
 	recipe := &model.Recipe{
 		Space:      int32(req.GetSpace()),
 		ItemID:     req.GetItemID(),
@@ -55,10 +76,13 @@ func CreateRecipe(ctx context.Context, c *app.RequestContext) {
 	}
 	err = gen.Recipe.WithContext(ctx).Create(recipe)
 	if err != nil {
-		err = fmt.Errorf("create recipe failed, err: %v", err)
-		c.String(consts.StatusBadRequest, err.Error())
-		return
+		return nil, &errors.HTTPCodeErr{
+			Code: consts.StatusBadRequest,
+			Err:  fmt.Errorf("create recipe failed, err: %v", err),
+		}
 	}
+
+	// 创建配方物品关联记录
 	recipeItems := gslice.Map(req.GetItems(), (func(item *api.RecipeItem) *model.RecipeItem {
 		return &model.RecipeItem{
 			RecipeID: recipe.ID,
@@ -68,16 +92,17 @@ func CreateRecipe(ctx context.Context, c *app.RequestContext) {
 	}))
 	err = gen.RecipeItem.WithContext(ctx).Create(recipeItems...)
 	if err != nil {
-		err = fmt.Errorf("create recipe item failed, err: %v", err)
-		c.String(consts.StatusBadRequest, err.Error())
-		return
+		return nil, &errors.HTTPCodeErr{
+			Code: consts.StatusBadRequest,
+			Err:  fmt.Errorf("create recipe item failed, err: %v", err),
+		}
 	}
 
+	// 构建响应数据
 	resp := new(api.CreateRecipeResp)
 	resp.Data = convert.ConvertRecipeToApi(recipe)
 	resp.Data.Items = gslice.Map(recipeItems, (func(item *model.RecipeItem) *api.RecipeItem {
 		return convert.ConvertRecipeItemToApi(item, itemMap[item.ItemID])
 	}))
-
-	c.JSON(consts.StatusOK, resp)
+	return resp, nil
 }

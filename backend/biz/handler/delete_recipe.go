@@ -10,32 +10,49 @@ import (
 	"github.com/cloudwego/hertz/pkg/protocol/consts"
 	api "github.com/richsoap/RecipeCalculator/biz/model/recipe/api"
 	"github.com/richsoap/RecipeCalculator/dal/gen"
+	"github.com/richsoap/RecipeCalculator/errors"
 )
 
-// DeleteRecipe .
+// DeleteRecipe 删除配方
 // @router /api/v1/recipes/:id [DELETE]
 func DeleteRecipe(ctx context.Context, c *app.RequestContext) {
 	var err error
 	var req api.DeleteRecipeReq
+	// 绑定并验证请求参数
 	err = c.BindAndValidate(&req)
 	if err != nil {
 		c.String(consts.StatusBadRequest, err.Error())
 		return
 	}
-	_, err = gen.Recipe.WithContext(ctx).Where(gen.Recipe.ID.Eq(req.GetID())).Delete()
-	if err != nil {
-		err = fmt.Errorf("delete recipe failed, err: %v", err)
-		c.String(consts.StatusBadRequest, err.Error())
+
+	resp, herr := DoDeleteRecipe(ctx, &req)
+	if herr != nil {
+		c.String(herr.HTTPCode(), herr.Error())
 		return
 	}
+
+	c.JSON(consts.StatusOK, resp)
+}
+
+func DoDeleteRecipe(ctx context.Context, req *api.DeleteRecipeReq) (*api.DeleteRecipeResp, *errors.HTTPCodeErr) {
+	// 删除配方记录
+	_, err := gen.Recipe.WithContext(ctx).Where(gen.Recipe.ID.Eq(req.GetID())).Delete()
+	if err != nil {
+		return nil, &errors.HTTPCodeErr{
+			Code: consts.StatusBadRequest,
+			Err:  fmt.Errorf("delete recipe failed, err: %v", err),
+		}
+	}
+
+	// 删除配方物品关联记录
 	_, err = gen.RecipeItem.WithContext(ctx).Where(gen.RecipeItem.RecipeID.Eq(req.GetID())).Delete()
 	if err != nil {
-		err = fmt.Errorf("delete recipe item failed, err: %v", err)
-		c.String(consts.StatusBadRequest, err.Error())
-		return
+		return nil, &errors.HTTPCodeErr{
+			Code: consts.StatusBadRequest,
+			Err:  fmt.Errorf("delete recipe item failed, err: %v", err),
+		}
 	}
 
 	resp := new(api.DeleteRecipeResp)
-
-	c.JSON(consts.StatusOK, resp)
+	return resp, nil
 }

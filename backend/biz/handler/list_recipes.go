@@ -13,6 +13,7 @@ import (
 	api "github.com/richsoap/RecipeCalculator/biz/model/recipe/api"
 	"github.com/richsoap/RecipeCalculator/dal/gen"
 	"github.com/richsoap/RecipeCalculator/dal/model"
+	"github.com/richsoap/RecipeCalculator/errors"
 )
 
 // ListRecipes 获取所有配方列表
@@ -27,11 +28,24 @@ func ListRecipes(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 
+	resp, herr := DoListRecipes(ctx, &req)
+	if herr != nil {
+		c.String(herr.HTTPCode(), herr.Error())
+		return
+	}
+
+	// 返回成功响应
+	c.JSON(consts.StatusOK, resp)
+}
+
+func DoListRecipes(ctx context.Context, req *api.ListRecipesReq) (*api.ListRecipesResp, *errors.HTTPCodeErr) {
 	// 查询所有配方
 	recipes, err := gen.Recipe.WithContext(ctx).Find()
 	if err != nil {
-		c.String(consts.StatusBadRequest, err.Error())
-		return
+		return nil, &errors.HTTPCodeErr{
+			Code: consts.StatusBadRequest,
+			Err:  err,
+		}
 	}
 
 	// 提取所有配方ID
@@ -42,8 +56,10 @@ func ListRecipes(ctx context.Context, c *app.RequestContext) {
 	// 查询所有配方的物品关联记录
 	recipeItems, err := gen.RecipeItem.WithContext(ctx).Where(gen.RecipeItem.RecipeID.In(recipeIDs...)).Find()
 	if err != nil {
-		c.String(consts.StatusBadRequest, err.Error())
-		return
+		return nil, &errors.HTTPCodeErr{
+			Code: consts.StatusBadRequest,
+			Err:  err,
+		}
 	}
 
 	// 提取所有相关的物品ID（包括配方产出物品和配方物品）
@@ -58,8 +74,10 @@ func ListRecipes(ctx context.Context, c *app.RequestContext) {
 	// 查询所有相关物品信息
 	items, err := gen.Item.WithContext(ctx).Where(gen.Item.ID.In(itemIDs...)).Find()
 	if err != nil {
-		c.String(consts.StatusBadRequest, err.Error())
-		return
+		return nil, &errors.HTTPCodeErr{
+			Code: consts.StatusBadRequest,
+			Err:  err,
+		}
 	}
 
 	// 构建物品ID到物品的映射
@@ -91,7 +109,5 @@ func ListRecipes(ctx context.Context, c *app.RequestContext) {
 		}
 		return apiRecipe
 	})
-
-	// 返回成功响应
-	c.JSON(consts.StatusOK, resp)
+	return resp, nil
 }

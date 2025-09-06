@@ -10,26 +10,40 @@ import (
 	"github.com/richsoap/RecipeCalculator/biz/convert"
 	api "github.com/richsoap/RecipeCalculator/biz/model/recipe/api"
 	"github.com/richsoap/RecipeCalculator/dal/gen"
+	"github.com/richsoap/RecipeCalculator/errors"
 )
 
-// GetItem .
+// GetItem 获取物品详情
 // @router /api/v1/items/:id [GET]
 func GetItem(ctx context.Context, c *app.RequestContext) {
 	var err error
 	var req api.GetItemReq
+	// 绑定并验证请求参数
 	err = c.BindAndValidate(&req)
 	if err != nil {
 		c.String(consts.StatusBadRequest, err.Error())
 		return
 	}
+
+	resp, herr := DoGetItem(ctx, &req)
+	if herr != nil {
+		c.String(herr.HTTPCode(), herr.Error())
+		return
+	}
+
+	c.JSON(consts.StatusOK, resp)
+}
+
+func DoGetItem(ctx context.Context, req *api.GetItemReq) (*api.GetItemResp, *errors.HTTPCodeErr) {
 	m, err := gen.Item.WithContext(ctx).Where(gen.Item.ID.Eq(req.GetID())).First()
 	if err != nil {
-		c.String(consts.StatusBadRequest, err.Error())
-		return
+		return nil, &errors.HTTPCodeErr{
+			Code: consts.StatusBadRequest,
+			Err:  err,
+		}
 	}
 
 	resp := new(api.GetItemResp)
 	resp.Data = convert.ConvertItemToApi(m)
-
-	c.JSON(consts.StatusOK, resp)
+	return resp, nil
 }

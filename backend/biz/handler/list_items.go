@@ -12,28 +12,41 @@ import (
 	"github.com/richsoap/RecipeCalculator/biz/convert"
 	api "github.com/richsoap/RecipeCalculator/biz/model/recipe/api"
 	"github.com/richsoap/RecipeCalculator/dal/gen"
+	"github.com/richsoap/RecipeCalculator/errors"
 )
 
-// ListItems .
+// ListItems 获取物品列表
 // @router /api/v1/items [GET]
 func ListItems(ctx context.Context, c *app.RequestContext) {
 	var err error
 	var req api.ListItemsReq
+	// 绑定并验证请求参数
 	err = c.BindAndValidate(&req)
 	if err != nil {
 		c.String(consts.StatusBadRequest, err.Error())
 		return
 	}
 
+	resp, herr := DoListItems(ctx, &req)
+	if herr != nil {
+		c.String(herr.HTTPCode(), herr.Error())
+		return
+	}
+
+	c.JSON(consts.StatusOK, resp)
+}
+
+func DoListItems(ctx context.Context, req *api.ListItemsReq) (*api.ListItemsResp, *errors.HTTPCodeErr) {
 	items, err := gen.Item.WithContext(ctx).Find()
 	if err != nil {
-		c.String(consts.StatusInternalServerError, err.Error())
-		return
+		return nil, &errors.HTTPCodeErr{
+			Code: consts.StatusInternalServerError,
+			Err:  err,
+		}
 	}
 
 	resp := new(api.ListItemsResp)
 	resp.Data = gslice.Map(items, convert.ConvertItemToApi)
 	resp.Total = gptr.Of(int32(len(items)))
-
-	c.JSON(consts.StatusOK, resp)
+	return resp, nil
 }

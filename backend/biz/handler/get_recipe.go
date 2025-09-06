@@ -13,47 +13,75 @@ import (
 	api "github.com/richsoap/RecipeCalculator/biz/model/recipe/api"
 	"github.com/richsoap/RecipeCalculator/dal/gen"
 	"github.com/richsoap/RecipeCalculator/dal/model"
+	"github.com/richsoap/RecipeCalculator/errors"
 )
 
-// GetRecipe .
+// GetRecipe 获取配方详情
 // @router /api/v1/recipes/:id [GET]
 func GetRecipe(ctx context.Context, c *app.RequestContext) {
 	var err error
 	var req api.GetRecipeReq
+	// 绑定并验证请求参数
 	err = c.BindAndValidate(&req)
 	if err != nil {
 		c.String(consts.StatusBadRequest, err.Error())
 		return
 	}
+
+	resp, herr := DoGetRecipe(ctx, &req)
+	if herr != nil {
+		c.String(herr.HTTPCode(), herr.Error())
+		return
+	}
+
+	c.JSON(consts.StatusOK, resp)
+}
+
+func DoGetRecipe(ctx context.Context, req *api.GetRecipeReq) (*api.GetRecipeResp, *errors.HTTPCodeErr) {
+	// 查询配方信息
 	recipe, err := gen.Recipe.WithContext(ctx).Where(gen.Recipe.ID.Eq(req.GetID())).First()
 	if err != nil {
-		c.String(consts.StatusBadRequest, err.Error())
-		return
+		return nil, &errors.HTTPCodeErr{
+			Code: consts.StatusBadRequest,
+			Err:  err,
+		}
 	}
+
+	// 查询配方物品关联记录
 	recipeItems, err := gen.RecipeItem.WithContext(ctx).Where(gen.RecipeItem.RecipeID.Eq(req.GetID())).Find()
 	if err != nil {
-		c.String(consts.StatusBadRequest, err.Error())
-		return
+		return nil, &errors.HTTPCodeErr{
+			Code: consts.StatusBadRequest,
+			Err:  err,
+		}
 	}
+
+	// 提取所有相关物品ID
 	ids := gslice.Map(recipeItems, (func(item *model.RecipeItem) int64 {
 		return item.ItemID
 	}))
 	ids = append(ids, recipe.ItemID)
+
+	// 查询所有相关物品信息
 	items, err := gen.Item.WithContext(ctx).Where(gen.Item.ID.In(ids...)).Find()
 	if err != nil {
-		c.String(consts.StatusBadRequest, err.Error())
-		return
+		return nil, &errors.HTTPCodeErr{
+			Code: consts.StatusBadRequest,
+			Err:  err,
+		}
 	}
+
+	// 构建物品ID到物品的映射
 	itemMap := gslice.ToMap(items, func(item *model.Item) (int64, *model.Item) {
 		return item.ID, item
 	})
 
+	// 构建响应数据
 	resp := new(api.GetRecipeResp)
 	resp.Data = convert.ConvertRecipeToApi(recipe)
 	resp.Data.ItemName = gptr.Of(itemMap[recipe.ItemID].Name)
 	resp.Data.Items = gslice.Map(recipeItems, (func(item *model.RecipeItem) *api.RecipeItem {
 		return convert.ConvertRecipeItemToApi(item, itemMap[item.ItemID])
 	}))
-
-	c.JSON(consts.StatusOK, resp)
+	return resp, nil
 }

@@ -13,6 +13,7 @@ import (
 	api "github.com/richsoap/RecipeCalculator/biz/model/recipe/api"
 	"github.com/richsoap/RecipeCalculator/dal/gen"
 	"github.com/richsoap/RecipeCalculator/dal/model"
+	"github.com/richsoap/RecipeCalculator/errors"
 )
 
 // UpdateRecipe 更新配方信息
@@ -26,17 +27,30 @@ func UpdateRecipe(ctx context.Context, c *app.RequestContext) {
 		c.String(consts.StatusBadRequest, err.Error())
 		return
 	}
+
+	resp, herr := DoUpdateRecipe(ctx, &req)
+	if herr != nil {
+		c.String(herr.HTTPCode(), herr.Error())
+		return
+	}
+
+	// 返回成功响应
+	c.JSON(consts.StatusOK, resp)
+}
+
+func DoUpdateRecipe(ctx context.Context, req *api.UpdateRecipeReq) (*api.UpdateRecipeResp, *errors.HTTPCodeErr) {
 	// 构建配方更新数据
 	recipe := &model.Recipe{
 		Efficiency: req.GetData().GetEfficiency(),
 		ItemID:     req.GetData().GetItemID(),
 	}
 	// 更新配方基本信息
-	_, err = gen.Recipe.WithContext(ctx).Where(gen.Recipe.ID.Eq(req.GetData().GetID())).Updates(gen.RecipeToUpdateMap(recipe))
+	_, err := gen.Recipe.WithContext(ctx).Where(gen.Recipe.ID.Eq(req.GetData().GetID())).Updates(gen.RecipeToUpdateMap(recipe))
 	if err != nil {
-		err = fmt.Errorf("UpdateRecipe err: %v", err)
-		c.String(consts.StatusBadRequest, err.Error())
-		return
+		return nil, &errors.HTTPCodeErr{
+			Code: consts.StatusBadRequest,
+			Err:  fmt.Errorf("UpdateRecipe err: %v", err),
+		}
 	}
 
 	// 提取请求中所有物品的ID
@@ -46,9 +60,10 @@ func UpdateRecipe(ctx context.Context, c *app.RequestContext) {
 	// 查询所有相关的物品信息
 	items, err := gen.Item.WithContext(ctx).Where(gen.Item.ID.In(ids...)).Find()
 	if err != nil {
-		err = fmt.Errorf("FindItems err: %v", err)
-		c.String(consts.StatusBadRequest, err.Error())
-		return
+		return nil, &errors.HTTPCodeErr{
+			Code: consts.StatusBadRequest,
+			Err:  fmt.Errorf("FindItems err: %v", err),
+		}
 	}
 	// 将物品列表转换为ID到物品的映射，便于快速查找
 	itemMap := gslice.ToMap(items, func(item *model.Item) (int64, *model.Item) {
@@ -57,18 +72,20 @@ func UpdateRecipe(ctx context.Context, c *app.RequestContext) {
 	// 验证请求中的所有物品是否都存在于数据库中
 	for _, item := range req.GetData().GetItems() {
 		if _, ok := itemMap[item.GetItem().GetID()]; !ok {
-			err = fmt.Errorf("item not found: %v", item.GetItem().GetID())
-			c.String(consts.StatusBadRequest, err.Error())
-			return
+			return nil, &errors.HTTPCodeErr{
+				Code: consts.StatusBadRequest,
+				Err:  fmt.Errorf("item not found: %v", item.GetItem().GetID()),
+			}
 		}
 	}
 
 	// 删除配方物品关联记录
 	_, err = gen.RecipeItem.WithContext(ctx).Where(gen.RecipeItem.RecipeID.Eq(req.GetData().GetID())).Delete()
 	if err != nil {
-		err = fmt.Errorf("DeleteRecipeItem err: %v", err)
-		c.String(consts.StatusBadRequest, err.Error())
-		return
+		return nil, &errors.HTTPCodeErr{
+			Code: consts.StatusBadRequest,
+			Err:  fmt.Errorf("DeleteRecipeItem err: %v", err),
+		}
 	}
 
 	// 将API模型转换为数据库模型
@@ -79,14 +96,13 @@ func UpdateRecipe(ctx context.Context, c *app.RequestContext) {
 	// 批量创建新的配方物品关联记录
 	err = gen.RecipeItem.WithContext(ctx).Create(recipeItems...)
 	if err != nil {
-		err = fmt.Errorf("InsertRecipeItem err: %v", err)
-		c.String(consts.StatusBadRequest, err.Error())
-		return
+		return nil, &errors.HTTPCodeErr{
+			Code: consts.StatusBadRequest,
+			Err:  fmt.Errorf("InsertRecipeItem err: %v", err),
+		}
 	}
 
 	// 构建响应数据
 	resp := new(api.UpdateRecipeResp)
-
-	// 返回成功响应
-	c.JSON(consts.StatusOK, resp)
+	return resp, nil
 }

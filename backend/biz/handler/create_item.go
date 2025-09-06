@@ -11,6 +11,7 @@ import (
 	api "github.com/richsoap/RecipeCalculator/biz/model/recipe/api"
 	"github.com/richsoap/RecipeCalculator/dal/gen"
 	"github.com/richsoap/RecipeCalculator/dal/model"
+	"github.com/richsoap/RecipeCalculator/errors"
 )
 
 // CreateItem .
@@ -23,17 +24,29 @@ func CreateItem(ctx context.Context, c *app.RequestContext) {
 		c.String(consts.StatusBadRequest, err.Error())
 		return
 	}
+
+	resp, herr := DoCreateItem(ctx, &req)
+	if herr != nil {
+		c.String(herr.HTTPCode(), herr.Error())
+		return
+	}
+
+	c.JSON(consts.StatusOK, resp)
+}
+
+func DoCreateItem(ctx context.Context, req *api.CreateItemReq) (*api.CreateItemResp, *errors.HTTPCodeErr) {
 	m := &model.Item{
 		Name: req.GetName(),
 	}
-	err = gen.Item.WithContext(ctx).Create(m)
+	err := gen.Item.WithContext(ctx).Create(m)
 	if err != nil {
-		c.String(consts.StatusBadRequest, err.Error())
-		return
+		return nil, &errors.HTTPCodeErr{
+			Code: consts.StatusBadRequest,
+			Err:  err,
+		}
 	}
 
 	resp := new(api.CreateItemResp)
 	resp.Data = convert.ConvertItemToApi(m)
-
-	c.JSON(consts.StatusOK, resp)
+	return resp, nil
 }
