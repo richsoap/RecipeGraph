@@ -53,8 +53,8 @@ func (p *RecipeItemType) Value() (driver.Value, error) {
 
 // Common response structure
 type BaseResponse struct {
-	Code    int32  `thrift:"code,1,required" form:"code,required" json:"code,required" query:"code,required"`
-	Message string `thrift:"message,2,required" form:"message,required" json:"message,required" query:"message,required"`
+	Code    *int32  `thrift:"code,1,optional" form:"code" json:"code,omitempty" query:"code"`
+	Message *string `thrift:"message,2,optional" form:"message" json:"message,omitempty" query:"message"`
 }
 
 func NewBaseResponse() *BaseResponse {
@@ -64,12 +64,30 @@ func NewBaseResponse() *BaseResponse {
 func (p *BaseResponse) InitDefault() {
 }
 
+var BaseResponse_Code_DEFAULT int32
+
 func (p *BaseResponse) GetCode() (v int32) {
-	return p.Code
+	if !p.IsSetCode() {
+		return BaseResponse_Code_DEFAULT
+	}
+	return *p.Code
 }
 
+var BaseResponse_Message_DEFAULT string
+
 func (p *BaseResponse) GetMessage() (v string) {
-	return p.Message
+	if !p.IsSetMessage() {
+		return BaseResponse_Message_DEFAULT
+	}
+	return *p.Message
+}
+
+func (p *BaseResponse) IsSetCode() bool {
+	return p.Code != nil
+}
+
+func (p *BaseResponse) IsSetMessage() bool {
+	return p.Message != nil
 }
 
 func (p *BaseResponse) String() string {
@@ -81,10 +99,10 @@ func (p *BaseResponse) String() string {
 
 // Item related structures
 type Item struct {
-	ID        int64  `thrift:"id,1,required" form:"id,required" json:"id,required" query:"id,required"`
-	Name      string `thrift:"name,2,required" form:"name,required" json:"name,required" query:"name,required"`
-	CreatedAt string `thrift:"created_at,3,required" form:"created_at,required" json:"created_at,required" query:"created_at,required"`
-	UpdatedAt string `thrift:"updated_at,4,required" form:"updated_at,required" json:"updated_at,required" query:"updated_at,required"`
+	ID        *int64  `thrift:"id,1,optional" form:"id" json:"id,omitempty" query:"id"`
+	Name      *string `thrift:"name,2,optional" form:"name" json:"name,omitempty" query:"name"`
+	CreatedAt *string `thrift:"created_at,3,optional" form:"created_at" json:"created_at,omitempty" query:"created_at"`
+	UpdatedAt *string `thrift:"updated_at,4,optional" form:"updated_at" json:"updated_at,omitempty" query:"updated_at"`
 }
 
 func NewItem() *Item {
@@ -94,20 +112,56 @@ func NewItem() *Item {
 func (p *Item) InitDefault() {
 }
 
+var Item_ID_DEFAULT int64
+
 func (p *Item) GetID() (v int64) {
-	return p.ID
+	if !p.IsSetID() {
+		return Item_ID_DEFAULT
+	}
+	return *p.ID
 }
+
+var Item_Name_DEFAULT string
 
 func (p *Item) GetName() (v string) {
-	return p.Name
+	if !p.IsSetName() {
+		return Item_Name_DEFAULT
+	}
+	return *p.Name
 }
+
+var Item_CreatedAt_DEFAULT string
 
 func (p *Item) GetCreatedAt() (v string) {
-	return p.CreatedAt
+	if !p.IsSetCreatedAt() {
+		return Item_CreatedAt_DEFAULT
+	}
+	return *p.CreatedAt
 }
 
+var Item_UpdatedAt_DEFAULT string
+
 func (p *Item) GetUpdatedAt() (v string) {
-	return p.UpdatedAt
+	if !p.IsSetUpdatedAt() {
+		return Item_UpdatedAt_DEFAULT
+	}
+	return *p.UpdatedAt
+}
+
+func (p *Item) IsSetID() bool {
+	return p.ID != nil
+}
+
+func (p *Item) IsSetName() bool {
+	return p.Name != nil
+}
+
+func (p *Item) IsSetCreatedAt() bool {
+	return p.CreatedAt != nil
+}
+
+func (p *Item) IsSetUpdatedAt() bool {
+	return p.UpdatedAt != nil
 }
 
 func (p *Item) String() string {
@@ -118,7 +172,7 @@ func (p *Item) String() string {
 }
 
 type CreateItemReq struct {
-	Name string `thrift:"name,1,required" form:"name,required" json:"name,required"`
+	Name *string `thrift:"name,1,optional" form:"name" json:"name,omitempty"`
 }
 
 func NewCreateItemReq() *CreateItemReq {
@@ -128,8 +182,17 @@ func NewCreateItemReq() *CreateItemReq {
 func (p *CreateItemReq) InitDefault() {
 }
 
+var CreateItemReq_Name_DEFAULT string
+
 func (p *CreateItemReq) GetName() (v string) {
-	return p.Name
+	if !p.IsSetName() {
+		return CreateItemReq_Name_DEFAULT
+	}
+	return *p.Name
+}
+
+func (p *CreateItemReq) IsSetName() bool {
+	return p.Name != nil
 }
 
 func (p *CreateItemReq) String() string {
@@ -140,8 +203,8 @@ func (p *CreateItemReq) String() string {
 }
 
 type CreateItemResp struct {
-	Base *BaseResponse `thrift:"base,1,required" form:"base,required" json:"base,required" query:"base,required"`
-	Data *Item         `thrift:"data,2,required" form:"data,required" json:"data,required" query:"data,required"`
+	Base *BaseResponse `thrift:"base,1,optional" form:"base" json:"base,omitempty" query:"base"`
+	Data *Item         `thrift:"data,2,optional" form:"data" json:"data,omitempty" query:"data"`
 }
 
 func NewCreateItemResp() *CreateItemResp {
@@ -185,7 +248,7 @@ func (p *CreateItemResp) String() string {
 }
 
 type GetItemReq struct {
-	ID int64 `thrift:"id,1,required" json:"id,required" path:"id,required"`
+	ID *int64 `thrift:"id,1,optional" json:"id,omitempty" path:"id"`
 }
 
 func NewGetItemReq() *GetItemReq {
@@ -195,8 +258,17 @@ func NewGetItemReq() *GetItemReq {
 func (p *GetItemReq) InitDefault() {
 }
 
+var GetItemReq_ID_DEFAULT int64
+
 func (p *GetItemReq) GetID() (v int64) {
-	return p.ID
+	if !p.IsSetID() {
+		return GetItemReq_ID_DEFAULT
+	}
+	return *p.ID
+}
+
+func (p *GetItemReq) IsSetID() bool {
+	return p.ID != nil
 }
 
 func (p *GetItemReq) String() string {
@@ -207,8 +279,8 @@ func (p *GetItemReq) String() string {
 }
 
 type GetItemResp struct {
-	Base *BaseResponse `thrift:"base,1,required" form:"base,required" json:"base,required" query:"base,required"`
-	Data *Item         `thrift:"data,2,required" form:"data,required" json:"data,required" query:"data,required"`
+	Base *BaseResponse `thrift:"base,1,optional" form:"base" json:"base,omitempty" query:"base"`
+	Data *Item         `thrift:"data,2,optional" form:"data" json:"data,omitempty" query:"data"`
 }
 
 func NewGetItemResp() *GetItemResp {
@@ -252,8 +324,8 @@ func (p *GetItemResp) String() string {
 }
 
 type UpdateItemReq struct {
-	ID   int64  `thrift:"id,1,required" json:"id,required" path:"id,required"`
-	Name string `thrift:"name,2,required" form:"name,required" json:"name,required"`
+	ID   *int64  `thrift:"id,1,optional" json:"id,omitempty" path:"id"`
+	Name *string `thrift:"name,2,optional" form:"name" json:"name,omitempty"`
 }
 
 func NewUpdateItemReq() *UpdateItemReq {
@@ -263,12 +335,30 @@ func NewUpdateItemReq() *UpdateItemReq {
 func (p *UpdateItemReq) InitDefault() {
 }
 
+var UpdateItemReq_ID_DEFAULT int64
+
 func (p *UpdateItemReq) GetID() (v int64) {
-	return p.ID
+	if !p.IsSetID() {
+		return UpdateItemReq_ID_DEFAULT
+	}
+	return *p.ID
 }
 
+var UpdateItemReq_Name_DEFAULT string
+
 func (p *UpdateItemReq) GetName() (v string) {
-	return p.Name
+	if !p.IsSetName() {
+		return UpdateItemReq_Name_DEFAULT
+	}
+	return *p.Name
+}
+
+func (p *UpdateItemReq) IsSetID() bool {
+	return p.ID != nil
+}
+
+func (p *UpdateItemReq) IsSetName() bool {
+	return p.Name != nil
 }
 
 func (p *UpdateItemReq) String() string {
@@ -279,8 +369,8 @@ func (p *UpdateItemReq) String() string {
 }
 
 type UpdateItemResp struct {
-	Base *BaseResponse `thrift:"base,1,required" form:"base,required" json:"base,required" query:"base,required"`
-	Data *Item         `thrift:"data,2,required" form:"data,required" json:"data,required" query:"data,required"`
+	Base *BaseResponse `thrift:"base,1,optional" form:"base" json:"base,omitempty" query:"base"`
+	Data *Item         `thrift:"data,2,optional" form:"data" json:"data,omitempty" query:"data"`
 }
 
 func NewUpdateItemResp() *UpdateItemResp {
@@ -324,7 +414,7 @@ func (p *UpdateItemResp) String() string {
 }
 
 type DeleteItemReq struct {
-	ID int64 `thrift:"id,1,required" json:"id,required" path:"id,required"`
+	ID *int64 `thrift:"id,1,optional" json:"id,omitempty" path:"id"`
 }
 
 func NewDeleteItemReq() *DeleteItemReq {
@@ -334,8 +424,17 @@ func NewDeleteItemReq() *DeleteItemReq {
 func (p *DeleteItemReq) InitDefault() {
 }
 
+var DeleteItemReq_ID_DEFAULT int64
+
 func (p *DeleteItemReq) GetID() (v int64) {
-	return p.ID
+	if !p.IsSetID() {
+		return DeleteItemReq_ID_DEFAULT
+	}
+	return *p.ID
+}
+
+func (p *DeleteItemReq) IsSetID() bool {
+	return p.ID != nil
 }
 
 func (p *DeleteItemReq) String() string {
@@ -346,7 +445,7 @@ func (p *DeleteItemReq) String() string {
 }
 
 type DeleteItemResp struct {
-	Base *BaseResponse `thrift:"base,1,required" form:"base,required" json:"base,required" query:"base,required"`
+	Base *BaseResponse `thrift:"base,1,optional" form:"base" json:"base,omitempty" query:"base"`
 }
 
 func NewDeleteItemResp() *DeleteItemResp {
@@ -436,9 +535,9 @@ func (p *ListItemsReq) String() string {
 }
 
 type ListItemsResp struct {
-	Base  *BaseResponse `thrift:"base,1,required" form:"base,required" json:"base,required" query:"base,required"`
-	Data  []*Item       `thrift:"data,2,required" form:"data,required" json:"data,required" query:"data,required"`
-	Total int32         `thrift:"total,3,required" form:"total,required" json:"total,required" query:"total,required"`
+	Base  *BaseResponse `thrift:"base,1,optional" form:"base" json:"base,omitempty" query:"base"`
+	Data  []*Item       `thrift:"data,2,optional" form:"data" json:"data,omitempty" query:"data"`
+	Total *int32        `thrift:"total,3,optional" form:"total" json:"total,omitempty" query:"total"`
 }
 
 func NewListItemsResp() *ListItemsResp {
@@ -457,16 +556,34 @@ func (p *ListItemsResp) GetBase() (v *BaseResponse) {
 	return p.Base
 }
 
+var ListItemsResp_Data_DEFAULT []*Item
+
 func (p *ListItemsResp) GetData() (v []*Item) {
+	if !p.IsSetData() {
+		return ListItemsResp_Data_DEFAULT
+	}
 	return p.Data
 }
 
+var ListItemsResp_Total_DEFAULT int32
+
 func (p *ListItemsResp) GetTotal() (v int32) {
-	return p.Total
+	if !p.IsSetTotal() {
+		return ListItemsResp_Total_DEFAULT
+	}
+	return *p.Total
 }
 
 func (p *ListItemsResp) IsSetBase() bool {
 	return p.Base != nil
+}
+
+func (p *ListItemsResp) IsSetData() bool {
+	return p.Data != nil
+}
+
+func (p *ListItemsResp) IsSetTotal() bool {
+	return p.Total != nil
 }
 
 func (p *ListItemsResp) String() string {
@@ -478,12 +595,12 @@ func (p *ListItemsResp) String() string {
 
 // Recipe related structures
 type Recipe struct {
-	ID         int64   `thrift:"id,1,required" form:"id,required" json:"id,required" query:"id,required"`
-	Space      int64   `thrift:"space,2,required" form:"space,required" json:"space,required" query:"space,required"`
-	ItemID     int64   `thrift:"item_id,3,required" form:"item_id,required" json:"item_id,required" query:"item_id,required"`
-	Efficiency float64 `thrift:"efficiency,4,required" form:"efficiency,required" json:"efficiency,required" query:"efficiency,required"`
-	CreatedAt  string  `thrift:"created_at,5,required" form:"created_at,required" json:"created_at,required" query:"created_at,required"`
-	UpdatedAt  string  `thrift:"updated_at,6,required" form:"updated_at,required" json:"updated_at,required" query:"updated_at,required"`
+	ID         *int64   `thrift:"id,1,optional" form:"id" json:"id,omitempty" query:"id"`
+	Space      *int64   `thrift:"space,2,optional" form:"space" json:"space,omitempty" query:"space"`
+	ItemID     *int64   `thrift:"item_id,3,optional" form:"item_id" json:"item_id,omitempty" query:"item_id"`
+	Efficiency *float64 `thrift:"efficiency,4,optional" form:"efficiency" json:"efficiency,omitempty" query:"efficiency"`
+	CreatedAt  *string  `thrift:"created_at,5,optional" form:"created_at" json:"created_at,omitempty" query:"created_at"`
+	UpdatedAt  *string  `thrift:"updated_at,6,optional" form:"updated_at" json:"updated_at,omitempty" query:"updated_at"`
 }
 
 func NewRecipe() *Recipe {
@@ -493,28 +610,82 @@ func NewRecipe() *Recipe {
 func (p *Recipe) InitDefault() {
 }
 
+var Recipe_ID_DEFAULT int64
+
 func (p *Recipe) GetID() (v int64) {
-	return p.ID
+	if !p.IsSetID() {
+		return Recipe_ID_DEFAULT
+	}
+	return *p.ID
 }
+
+var Recipe_Space_DEFAULT int64
 
 func (p *Recipe) GetSpace() (v int64) {
-	return p.Space
+	if !p.IsSetSpace() {
+		return Recipe_Space_DEFAULT
+	}
+	return *p.Space
 }
+
+var Recipe_ItemID_DEFAULT int64
 
 func (p *Recipe) GetItemID() (v int64) {
-	return p.ItemID
+	if !p.IsSetItemID() {
+		return Recipe_ItemID_DEFAULT
+	}
+	return *p.ItemID
 }
+
+var Recipe_Efficiency_DEFAULT float64
 
 func (p *Recipe) GetEfficiency() (v float64) {
-	return p.Efficiency
+	if !p.IsSetEfficiency() {
+		return Recipe_Efficiency_DEFAULT
+	}
+	return *p.Efficiency
 }
+
+var Recipe_CreatedAt_DEFAULT string
 
 func (p *Recipe) GetCreatedAt() (v string) {
-	return p.CreatedAt
+	if !p.IsSetCreatedAt() {
+		return Recipe_CreatedAt_DEFAULT
+	}
+	return *p.CreatedAt
 }
 
+var Recipe_UpdatedAt_DEFAULT string
+
 func (p *Recipe) GetUpdatedAt() (v string) {
-	return p.UpdatedAt
+	if !p.IsSetUpdatedAt() {
+		return Recipe_UpdatedAt_DEFAULT
+	}
+	return *p.UpdatedAt
+}
+
+func (p *Recipe) IsSetID() bool {
+	return p.ID != nil
+}
+
+func (p *Recipe) IsSetSpace() bool {
+	return p.Space != nil
+}
+
+func (p *Recipe) IsSetItemID() bool {
+	return p.ItemID != nil
+}
+
+func (p *Recipe) IsSetEfficiency() bool {
+	return p.Efficiency != nil
+}
+
+func (p *Recipe) IsSetCreatedAt() bool {
+	return p.CreatedAt != nil
+}
+
+func (p *Recipe) IsSetUpdatedAt() bool {
+	return p.UpdatedAt != nil
 }
 
 func (p *Recipe) String() string {
@@ -525,14 +696,14 @@ func (p *Recipe) String() string {
 }
 
 type RecipeItem struct {
-	ID        int64          `thrift:"id,1,required" form:"id,required" json:"id,required" query:"id,required"`
-	RecipeID  int64          `thrift:"recipe_id,2,required" form:"recipe_id,required" json:"recipe_id,required" query:"recipe_id,required"`
-	Space     int64          `thrift:"space,3,required" form:"space,required" json:"space,required" query:"space,required"`
-	Type      RecipeItemType `thrift:"type,4,required" form:"type,required" json:"type,required" query:"type,required"`
-	ItemID    int64          `thrift:"item_id,5,required" form:"item_id,required" json:"item_id,required" query:"item_id,required"`
-	Count     int32          `thrift:"count,6,required" form:"count,required" json:"count,required" query:"count,required"`
-	CreatedAt string         `thrift:"created_at,7,required" form:"created_at,required" json:"created_at,required" query:"created_at,required"`
-	UpdatedAt string         `thrift:"updated_at,8,required" form:"updated_at,required" json:"updated_at,required" query:"updated_at,required"`
+	ID        *int64          `thrift:"id,1,optional" form:"id" json:"id,omitempty" query:"id"`
+	RecipeID  *int64          `thrift:"recipe_id,2,optional" form:"recipe_id" json:"recipe_id,omitempty" query:"recipe_id"`
+	Space     *int64          `thrift:"space,3,optional" form:"space" json:"space,omitempty" query:"space"`
+	Type      *RecipeItemType `thrift:"type,4,optional" form:"type" json:"type,omitempty" query:"type"`
+	Count     *int32          `thrift:"count,5,optional" form:"count" json:"count,omitempty" query:"count"`
+	Item      *Item           `thrift:"item,6,optional" form:"item" json:"item,omitempty" query:"item"`
+	CreatedAt *string         `thrift:"created_at,7,optional" form:"created_at" json:"created_at,omitempty" query:"created_at"`
+	UpdatedAt *string         `thrift:"updated_at,8,optional" form:"updated_at" json:"updated_at,omitempty" query:"updated_at"`
 }
 
 func NewRecipeItem() *RecipeItem {
@@ -542,36 +713,108 @@ func NewRecipeItem() *RecipeItem {
 func (p *RecipeItem) InitDefault() {
 }
 
+var RecipeItem_ID_DEFAULT int64
+
 func (p *RecipeItem) GetID() (v int64) {
-	return p.ID
+	if !p.IsSetID() {
+		return RecipeItem_ID_DEFAULT
+	}
+	return *p.ID
 }
+
+var RecipeItem_RecipeID_DEFAULT int64
 
 func (p *RecipeItem) GetRecipeID() (v int64) {
-	return p.RecipeID
+	if !p.IsSetRecipeID() {
+		return RecipeItem_RecipeID_DEFAULT
+	}
+	return *p.RecipeID
 }
+
+var RecipeItem_Space_DEFAULT int64
 
 func (p *RecipeItem) GetSpace() (v int64) {
-	return p.Space
+	if !p.IsSetSpace() {
+		return RecipeItem_Space_DEFAULT
+	}
+	return *p.Space
 }
+
+var RecipeItem_Type_DEFAULT RecipeItemType
 
 func (p *RecipeItem) GetType() (v RecipeItemType) {
-	return p.Type
+	if !p.IsSetType() {
+		return RecipeItem_Type_DEFAULT
+	}
+	return *p.Type
 }
 
-func (p *RecipeItem) GetItemID() (v int64) {
-	return p.ItemID
-}
+var RecipeItem_Count_DEFAULT int32
 
 func (p *RecipeItem) GetCount() (v int32) {
-	return p.Count
+	if !p.IsSetCount() {
+		return RecipeItem_Count_DEFAULT
+	}
+	return *p.Count
 }
+
+var RecipeItem_Item_DEFAULT *Item
+
+func (p *RecipeItem) GetItem() (v *Item) {
+	if !p.IsSetItem() {
+		return RecipeItem_Item_DEFAULT
+	}
+	return p.Item
+}
+
+var RecipeItem_CreatedAt_DEFAULT string
 
 func (p *RecipeItem) GetCreatedAt() (v string) {
-	return p.CreatedAt
+	if !p.IsSetCreatedAt() {
+		return RecipeItem_CreatedAt_DEFAULT
+	}
+	return *p.CreatedAt
 }
 
+var RecipeItem_UpdatedAt_DEFAULT string
+
 func (p *RecipeItem) GetUpdatedAt() (v string) {
-	return p.UpdatedAt
+	if !p.IsSetUpdatedAt() {
+		return RecipeItem_UpdatedAt_DEFAULT
+	}
+	return *p.UpdatedAt
+}
+
+func (p *RecipeItem) IsSetID() bool {
+	return p.ID != nil
+}
+
+func (p *RecipeItem) IsSetRecipeID() bool {
+	return p.RecipeID != nil
+}
+
+func (p *RecipeItem) IsSetSpace() bool {
+	return p.Space != nil
+}
+
+func (p *RecipeItem) IsSetType() bool {
+	return p.Type != nil
+}
+
+func (p *RecipeItem) IsSetCount() bool {
+	return p.Count != nil
+}
+
+func (p *RecipeItem) IsSetItem() bool {
+	return p.Item != nil
+}
+
+func (p *RecipeItem) IsSetCreatedAt() bool {
+	return p.CreatedAt != nil
+}
+
+func (p *RecipeItem) IsSetUpdatedAt() bool {
+	return p.UpdatedAt != nil
 }
 
 func (p *RecipeItem) String() string {
@@ -582,10 +825,10 @@ func (p *RecipeItem) String() string {
 }
 
 type CreateRecipeReq struct {
-	Space      int64         `thrift:"space,1,required" form:"space,required" json:"space,required"`
-	ItemID     int64         `thrift:"item_id,2,required" form:"item_id,required" json:"item_id,required"`
-	Efficiency float64       `thrift:"efficiency,3,required" form:"efficiency,required" json:"efficiency,required"`
-	Items      []*RecipeItem `thrift:"items,4,required" form:"items,required" json:"items,required"`
+	Space      *int64        `thrift:"space,1,optional" form:"space" json:"space,omitempty"`
+	ItemID     *int64        `thrift:"item_id,2,optional" form:"item_id" json:"item_id,omitempty"`
+	Efficiency *float64      `thrift:"efficiency,3,optional" form:"efficiency" json:"efficiency,omitempty"`
+	Items      []*RecipeItem `thrift:"items,4,optional" form:"items" json:"items,omitempty"`
 }
 
 func NewCreateRecipeReq() *CreateRecipeReq {
@@ -595,20 +838,56 @@ func NewCreateRecipeReq() *CreateRecipeReq {
 func (p *CreateRecipeReq) InitDefault() {
 }
 
+var CreateRecipeReq_Space_DEFAULT int64
+
 func (p *CreateRecipeReq) GetSpace() (v int64) {
-	return p.Space
+	if !p.IsSetSpace() {
+		return CreateRecipeReq_Space_DEFAULT
+	}
+	return *p.Space
 }
+
+var CreateRecipeReq_ItemID_DEFAULT int64
 
 func (p *CreateRecipeReq) GetItemID() (v int64) {
-	return p.ItemID
+	if !p.IsSetItemID() {
+		return CreateRecipeReq_ItemID_DEFAULT
+	}
+	return *p.ItemID
 }
+
+var CreateRecipeReq_Efficiency_DEFAULT float64
 
 func (p *CreateRecipeReq) GetEfficiency() (v float64) {
-	return p.Efficiency
+	if !p.IsSetEfficiency() {
+		return CreateRecipeReq_Efficiency_DEFAULT
+	}
+	return *p.Efficiency
 }
 
+var CreateRecipeReq_Items_DEFAULT []*RecipeItem
+
 func (p *CreateRecipeReq) GetItems() (v []*RecipeItem) {
+	if !p.IsSetItems() {
+		return CreateRecipeReq_Items_DEFAULT
+	}
 	return p.Items
+}
+
+func (p *CreateRecipeReq) IsSetSpace() bool {
+	return p.Space != nil
+}
+
+func (p *CreateRecipeReq) IsSetItemID() bool {
+	return p.ItemID != nil
+}
+
+func (p *CreateRecipeReq) IsSetEfficiency() bool {
+	return p.Efficiency != nil
+}
+
+func (p *CreateRecipeReq) IsSetItems() bool {
+	return p.Items != nil
 }
 
 func (p *CreateRecipeReq) String() string {
@@ -619,8 +898,8 @@ func (p *CreateRecipeReq) String() string {
 }
 
 type CreateRecipeResp struct {
-	Base *BaseResponse `thrift:"base,1,required" form:"base,required" json:"base,required" query:"base,required"`
-	Data *Recipe       `thrift:"data,2,required" form:"data,required" json:"data,required" query:"data,required"`
+	Base *BaseResponse `thrift:"base,1,optional" form:"base" json:"base,omitempty" query:"base"`
+	Data *Recipe       `thrift:"data,2,optional" form:"data" json:"data,omitempty" query:"data"`
 }
 
 func NewCreateRecipeResp() *CreateRecipeResp {
@@ -664,7 +943,7 @@ func (p *CreateRecipeResp) String() string {
 }
 
 type GetRecipeReq struct {
-	ID int64 `thrift:"id,1,required" json:"id,required" path:"id,required"`
+	ID *int64 `thrift:"id,1,optional" json:"id,omitempty" path:"id"`
 }
 
 func NewGetRecipeReq() *GetRecipeReq {
@@ -674,8 +953,17 @@ func NewGetRecipeReq() *GetRecipeReq {
 func (p *GetRecipeReq) InitDefault() {
 }
 
+var GetRecipeReq_ID_DEFAULT int64
+
 func (p *GetRecipeReq) GetID() (v int64) {
-	return p.ID
+	if !p.IsSetID() {
+		return GetRecipeReq_ID_DEFAULT
+	}
+	return *p.ID
+}
+
+func (p *GetRecipeReq) IsSetID() bool {
+	return p.ID != nil
 }
 
 func (p *GetRecipeReq) String() string {
@@ -686,9 +974,9 @@ func (p *GetRecipeReq) String() string {
 }
 
 type GetRecipeResp struct {
-	Base  *BaseResponse `thrift:"base,1,required" form:"base,required" json:"base,required" query:"base,required"`
-	Data  *Recipe       `thrift:"data,2,required" form:"data,required" json:"data,required" query:"data,required"`
-	Items []*RecipeItem `thrift:"items,3,required" form:"items,required" json:"items,required" query:"items,required"`
+	Base  *BaseResponse `thrift:"base,1,optional" form:"base" json:"base,omitempty" query:"base"`
+	Data  *Recipe       `thrift:"data,2,optional" form:"data" json:"data,omitempty" query:"data"`
+	Items []*RecipeItem `thrift:"items,3,optional" form:"items" json:"items,omitempty" query:"items"`
 }
 
 func NewGetRecipeResp() *GetRecipeResp {
@@ -716,7 +1004,12 @@ func (p *GetRecipeResp) GetData() (v *Recipe) {
 	return p.Data
 }
 
+var GetRecipeResp_Items_DEFAULT []*RecipeItem
+
 func (p *GetRecipeResp) GetItems() (v []*RecipeItem) {
+	if !p.IsSetItems() {
+		return GetRecipeResp_Items_DEFAULT
+	}
 	return p.Items
 }
 
@@ -728,6 +1021,10 @@ func (p *GetRecipeResp) IsSetData() bool {
 	return p.Data != nil
 }
 
+func (p *GetRecipeResp) IsSetItems() bool {
+	return p.Items != nil
+}
+
 func (p *GetRecipeResp) String() string {
 	if p == nil {
 		return "<nil>"
@@ -736,7 +1033,7 @@ func (p *GetRecipeResp) String() string {
 }
 
 type UpdateRecipeReq struct {
-	ID         int64         `thrift:"id,1,required" json:"id,required" path:"id,required"`
+	ID         *int64        `thrift:"id,1,optional" json:"id,omitempty" path:"id"`
 	Space      *int64        `thrift:"space,2,optional" form:"space" json:"space,omitempty"`
 	ItemID     *int64        `thrift:"item_id,3,optional" form:"item_id" json:"item_id,omitempty"`
 	Efficiency *float64      `thrift:"efficiency,4,optional" form:"efficiency" json:"efficiency,omitempty"`
@@ -750,8 +1047,13 @@ func NewUpdateRecipeReq() *UpdateRecipeReq {
 func (p *UpdateRecipeReq) InitDefault() {
 }
 
+var UpdateRecipeReq_ID_DEFAULT int64
+
 func (p *UpdateRecipeReq) GetID() (v int64) {
-	return p.ID
+	if !p.IsSetID() {
+		return UpdateRecipeReq_ID_DEFAULT
+	}
+	return *p.ID
 }
 
 var UpdateRecipeReq_Space_DEFAULT int64
@@ -790,6 +1092,10 @@ func (p *UpdateRecipeReq) GetItems() (v []*RecipeItem) {
 	return p.Items
 }
 
+func (p *UpdateRecipeReq) IsSetID() bool {
+	return p.ID != nil
+}
+
 func (p *UpdateRecipeReq) IsSetSpace() bool {
 	return p.Space != nil
 }
@@ -814,8 +1120,8 @@ func (p *UpdateRecipeReq) String() string {
 }
 
 type UpdateRecipeResp struct {
-	Base *BaseResponse `thrift:"base,1,required" form:"base,required" json:"base,required" query:"base,required"`
-	Data *Recipe       `thrift:"data,2,required" form:"data,required" json:"data,required" query:"data,required"`
+	Base *BaseResponse `thrift:"base,1,optional" form:"base" json:"base,omitempty" query:"base"`
+	Data *Recipe       `thrift:"data,2,optional" form:"data" json:"data,omitempty" query:"data"`
 }
 
 func NewUpdateRecipeResp() *UpdateRecipeResp {
@@ -859,7 +1165,7 @@ func (p *UpdateRecipeResp) String() string {
 }
 
 type DeleteRecipeReq struct {
-	ID int64 `thrift:"id,1,required" json:"id,required" path:"id,required"`
+	ID *int64 `thrift:"id,1,optional" json:"id,omitempty" path:"id"`
 }
 
 func NewDeleteRecipeReq() *DeleteRecipeReq {
@@ -869,8 +1175,17 @@ func NewDeleteRecipeReq() *DeleteRecipeReq {
 func (p *DeleteRecipeReq) InitDefault() {
 }
 
+var DeleteRecipeReq_ID_DEFAULT int64
+
 func (p *DeleteRecipeReq) GetID() (v int64) {
-	return p.ID
+	if !p.IsSetID() {
+		return DeleteRecipeReq_ID_DEFAULT
+	}
+	return *p.ID
+}
+
+func (p *DeleteRecipeReq) IsSetID() bool {
+	return p.ID != nil
 }
 
 func (p *DeleteRecipeReq) String() string {
@@ -881,7 +1196,7 @@ func (p *DeleteRecipeReq) String() string {
 }
 
 type DeleteRecipeResp struct {
-	Base *BaseResponse `thrift:"base,1,required" form:"base,required" json:"base,required" query:"base,required"`
+	Base *BaseResponse `thrift:"base,1,optional" form:"base" json:"base,omitempty" query:"base"`
 }
 
 func NewDeleteRecipeResp() *DeleteRecipeResp {
@@ -985,9 +1300,9 @@ func (p *ListRecipesReq) String() string {
 }
 
 type ListRecipesResp struct {
-	Base  *BaseResponse `thrift:"base,1,required" form:"base,required" json:"base,required" query:"base,required"`
-	Data  []*Recipe     `thrift:"data,2,required" form:"data,required" json:"data,required" query:"data,required"`
-	Total int32         `thrift:"total,3,required" form:"total,required" json:"total,required" query:"total,required"`
+	Base  *BaseResponse `thrift:"base,1,optional" form:"base" json:"base,omitempty" query:"base"`
+	Data  []*Recipe     `thrift:"data,2,optional" form:"data" json:"data,omitempty" query:"data"`
+	Total *int32        `thrift:"total,3,optional" form:"total" json:"total,omitempty" query:"total"`
 }
 
 func NewListRecipesResp() *ListRecipesResp {
@@ -1006,16 +1321,34 @@ func (p *ListRecipesResp) GetBase() (v *BaseResponse) {
 	return p.Base
 }
 
+var ListRecipesResp_Data_DEFAULT []*Recipe
+
 func (p *ListRecipesResp) GetData() (v []*Recipe) {
+	if !p.IsSetData() {
+		return ListRecipesResp_Data_DEFAULT
+	}
 	return p.Data
 }
 
+var ListRecipesResp_Total_DEFAULT int32
+
 func (p *ListRecipesResp) GetTotal() (v int32) {
-	return p.Total
+	if !p.IsSetTotal() {
+		return ListRecipesResp_Total_DEFAULT
+	}
+	return *p.Total
 }
 
 func (p *ListRecipesResp) IsSetBase() bool {
 	return p.Base != nil
+}
+
+func (p *ListRecipesResp) IsSetData() bool {
+	return p.Data != nil
+}
+
+func (p *ListRecipesResp) IsSetTotal() bool {
+	return p.Total != nil
 }
 
 func (p *ListRecipesResp) String() string {

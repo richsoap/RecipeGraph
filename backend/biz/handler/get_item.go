@@ -7,7 +7,9 @@ import (
 
 	"github.com/cloudwego/hertz/pkg/app"
 	"github.com/cloudwego/hertz/pkg/protocol/consts"
+	"github.com/richsoap/RecipeCalculator/biz/convert"
 	api "github.com/richsoap/RecipeCalculator/biz/model/recipe/api"
+	"github.com/richsoap/RecipeCalculator/dal/gen"
 )
 
 // GetItem .
@@ -20,8 +22,14 @@ func GetItem(ctx context.Context, c *app.RequestContext) {
 		c.String(consts.StatusBadRequest, err.Error())
 		return
 	}
+	m, err := gen.Item.WithContext(ctx).Where(gen.Item.ID.Eq(int32(req.GetID()))).First()
+	if err != nil {
+		c.String(consts.StatusBadRequest, err.Error())
+		return
+	}
 
 	resp := new(api.GetItemResp)
+	resp.Data = convert.ConvertItemToApi(m)
 
 	c.JSON(consts.StatusOK, resp)
 }

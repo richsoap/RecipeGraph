@@ -3,52 +3,52 @@ namespace go recipe.api
 
 // Common response structure
 struct BaseResponse {
-    1: required i32 code,
-    2: required string message,
+    1: optional i32 code,
+    2: optional string message,
 }
 
 // Item related structures
 struct Item {
-    1: required i64 id,
-    2: required string name,
-    3: required string created_at,
-    4: required string updated_at,
+    1: optional i64 id,
+    2: optional string name,
+    3: optional string created_at,
+    4: optional string updated_at,
 }
 
 struct CreateItemReq {
-    1: required string name (api.body = "name"),
+    1: optional string name (api.body = "name"),
 }
 
 struct CreateItemResp {
-    1: required BaseResponse base,
-    2: required Item data,
+    1: optional BaseResponse base,
+    2: optional Item data,
 }
 
 struct GetItemReq {
-    1: required i64 id (api.path = "id"),
+    1: optional i64 id (api.path = "id"),
 }
 
 struct GetItemResp {
-    1: required BaseResponse base,
-    2: required Item data,
+    1: optional BaseResponse base,
+    2: optional Item data,
 }
 
 struct UpdateItemReq {
-    1: required i64 id (api.path = "id"),
-    2: required string name (api.body = "name"),
+    1: optional i64 id (api.path = "id"),
+    2: optional string name (api.body = "name"),
 }
 
 struct UpdateItemResp {
-    1: required BaseResponse base,
-    2: required Item data,
+    1: optional BaseResponse base,
+    2: optional Item data,
 }
 
 struct DeleteItemReq {
-    1: required i64 id (api.path = "id"),
+    1: optional i64 id (api.path = "id"),
 }
 
 struct DeleteItemResp {
-    1: required BaseResponse base,
+    1: optional BaseResponse base,
 }
 
 struct ListItemsReq {
@@ -58,19 +58,19 @@ struct ListItemsReq {
 }
 
 struct ListItemsResp {
-    1: required BaseResponse base,
-    2: required list<Item> data,
-    3: required i32 total,
+    1: optional BaseResponse base,
+    2: optional list<Item> data,
+    3: optional i32 total,
 }
 
 // Recipe related structures
 struct Recipe {
-    1: required i64 id,
-    2: required i64 space,
-    3: required i64 item_id,
-    4: required double efficiency,
-    5: required string created_at,
-    6: required string updated_at,
+    1: optional i64 id,
+    2: optional i64 space,
+    3: optional i64 item_id,
+    4: optional double efficiency,
+    5: optional string created_at,
+    6: optional string updated_at,
 }
 
 enum RecipeItemType {
@@ -79,40 +79,40 @@ enum RecipeItemType {
 }
 
 struct RecipeItem {
-    1: required i64 id,
-    2: required i64 recipe_id,
-    3: required i64 space,
-    4: required RecipeItemType type,
-    5: required i64 item_id,
-    6: required i32 count,
-    7: required string created_at,
-    8: required string updated_at,
+    1: optional i64 id,
+    2: optional i64 recipe_id,
+    3: optional i64 space,
+    4: optional RecipeItemType type,
+    5: optional i32 count,
+    6: optional Item item,
+    7: optional string created_at,
+    8: optional string updated_at,
 }
 
 struct CreateRecipeReq {
-    1: required i64 space (api.body = "space"),
-    2: required i64 item_id (api.body = "item_id"),
-    3: required double efficiency (api.body = "efficiency"),
-    4: required list<RecipeItem> items (api.body = "items"),
+    1: optional i64 space (api.body = "space"),
+    2: optional i64 item_id (api.body = "item_id"),
+    3: optional double efficiency (api.body = "efficiency"),
+    4: optional list<RecipeItem> items (api.body = "items"),
 }
 
 struct CreateRecipeResp {
-    1: required BaseResponse base,
-    2: required Recipe data,
+    1: optional BaseResponse base,
+    2: optional Recipe data,
 }
 
 struct GetRecipeReq {
-    1: required i64 id (api.path = "id"),
+    1: optional i64 id (api.path = "id"),
 }
 
 struct GetRecipeResp {
-    1: required BaseResponse base,
-    2: required Recipe data,
-    3: required list<RecipeItem> items,
+    1: optional BaseResponse base,
+    2: optional Recipe data,
+    3: optional list<RecipeItem> items,
 }
 
 struct UpdateRecipeReq {
-    1: required i64 id (api.path = "id"),
+    1: optional i64 id (api.path = "id"),
     2: optional i64 space (api.body = "space"),
     3: optional i64 item_id (api.body = "item_id"),
     4: optional double efficiency (api.body = "efficiency"),
@@ -120,16 +120,16 @@ struct UpdateRecipeReq {
 }
 
 struct UpdateRecipeResp {
-    1: required BaseResponse base,
-    2: required Recipe data,
+    1: optional BaseResponse base,
+    2: optional Recipe data,
 }
 
 struct DeleteRecipeReq {
-    1: required i64 id (api.path = "id"),
+    1: optional i64 id (api.path = "id"),
 }
 
 struct DeleteRecipeResp {
-    1: required BaseResponse base,
+    1: optional BaseResponse base,
 }
 
 struct ListRecipesReq {
@@ -140,9 +140,9 @@ struct ListRecipesReq {
 }
 
 struct ListRecipesResp {
-    1: required BaseResponse base,
-    2: required list<Recipe> data,
-    3: required i32 total,
+    1: optional BaseResponse base,
+    2: optional list<Recipe> data,
+    3: optional i32 total,
 }
 
 // Service definitions

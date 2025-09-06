@@ -3,25 +3,26 @@ package convert
 import (
 	"time"
 
+	"github.com/bytedance/gg/gptr"
 	api "github.com/richsoap/RecipeCalculator/biz/model/recipe/api"
 	model "github.com/richsoap/RecipeCalculator/dal/model"
 )
 
 // ConvertRecipeItemToApi 将数据库模型转换为API模型
-func ConvertRecipeItemToApi(recipeItem *model.RecipeItem) *api.RecipeItem {
+func ConvertRecipeItemToApi(recipeItem *model.RecipeItem, item *model.Item) *api.RecipeItem {
 	if recipeItem == nil {
 		return nil
 	}
 
 	return &api.RecipeItem{
-		ID:        int64(recipeItem.ID),
-		RecipeID:  int64(recipeItem.RecipeID),
-		Space:     int64(recipeItem.Space),
-		Type:      api.RecipeItemType(recipeItem.Type),
-		ItemID:    int64(recipeItem.ItemID),
-		Count:     recipeItem.Count_,
-		CreatedAt: recipeItem.CreatedAt.Format(time.RFC3339),
-		UpdatedAt: recipeItem.UpdatedAt.Format(time.RFC3339),
+		ID:        gptr.Of(int64(recipeItem.ID)),
+		RecipeID:  gptr.Of(int64(recipeItem.RecipeID)),
+		Space:     gptr.Of(int64(recipeItem.Space)),
+		Type:      gptr.Of(api.RecipeItemType(recipeItem.Type)),
+		Item:      ConvertItemToApi(item),
+		Count:     &recipeItem.Count_,
+		CreatedAt: gptr.Of(recipeItem.CreatedAt.Format(time.RFC3339)),
+		UpdatedAt: gptr.Of(recipeItem.UpdatedAt.Format(time.RFC3339)),
 	}
 }
 
@@ -31,23 +32,23 @@ func ConvertRecipeItemToModel(recipeItem *api.RecipeItem) (*model.RecipeItem, er
 		return nil, nil
 	}
 
-	createdAt, err := time.Parse(time.RFC3339, recipeItem.CreatedAt)
+	createdAt, err := time.Parse(time.RFC3339, recipeItem.GetCreatedAt())
 	if err != nil {
 		return nil, err
 	}
 
-	updatedAt, err := time.Parse(time.RFC3339, recipeItem.UpdatedAt)
+	updatedAt, err := time.Parse(time.RFC3339, recipeItem.GetUpdatedAt())
 	if err != nil {
 		return nil, err
 	}
 
 	return &model.RecipeItem{
-		ID:        int32(recipeItem.ID),
-		RecipeID:  int32(recipeItem.RecipeID),
-		Space:     int32(recipeItem.Space),
-		Type:      int32(recipeItem.Type),
-		ItemID:    int32(recipeItem.ItemID),
-		Count_:    recipeItem.Count,
+		ID:        int32(recipeItem.GetID()),
+		RecipeID:  int32(recipeItem.GetRecipeID()),
+		Space:     int32(recipeItem.GetSpace()),
+		Type:      int32(recipeItem.GetType()),
+		ItemID:    int32(recipeItem.GetItem().GetID()),
+		Count_:    recipeItem.GetCount(),
 		CreatedAt: createdAt,
 		UpdatedAt: updatedAt,
 	}, nil

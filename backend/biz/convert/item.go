@@ -3,6 +3,7 @@ package convert
 import (
 	"time"
 
+	"github.com/bytedance/gg/gptr"
 	api "github.com/richsoap/RecipeCalculator/biz/model/recipe/api"
 	model "github.com/richsoap/RecipeCalculator/dal/model"
 )
@@ -14,10 +15,10 @@ func ConvertItemToApi(item *model.Item) *api.Item {
 	}
 
 	return &api.Item{
-		ID:        int64(item.ID),
-		Name:      item.Name,
-		CreatedAt: item.CreatedAt.Format(time.RFC3339),
-		UpdatedAt: item.UpdatedAt.Format(time.RFC3339),
+		ID:        gptr.Of(int64(item.ID)),
+		Name:      gptr.Of(item.Name),
+		CreatedAt: gptr.Of(item.CreatedAt.Format(time.RFC3339)),
+		UpdatedAt: gptr.Of(item.UpdatedAt.Format(time.RFC3339)),
 	}
 }
 
@@ -27,19 +28,19 @@ func ConvertItemToModel(item *api.Item) (*model.Item, error) {
 		return nil, nil
 	}
 
-	createdAt, err := time.Parse(time.RFC3339, item.CreatedAt)
+	createdAt, err := time.Parse(time.RFC3339, item.GetCreatedAt())
 	if err != nil {
 		return nil, err
 	}
 
-	updatedAt, err := time.Parse(time.RFC3339, item.UpdatedAt)
+	updatedAt, err := time.Parse(time.RFC3339, item.GetUpdatedAt())
 	if err != nil {
 		return nil, err
 	}
 
 	return &model.Item{
-		ID:        int32(item.ID),
-		Name:      item.Name,
+		ID:        int32(item.GetID()),
+		Name:      item.GetName(),
 		CreatedAt: createdAt,
 		UpdatedAt: updatedAt,
 	}, nil

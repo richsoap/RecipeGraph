@@ -8,6 +8,7 @@ import (
 	"github.com/cloudwego/hertz/pkg/app"
 	"github.com/cloudwego/hertz/pkg/protocol/consts"
 	api "github.com/richsoap/RecipeCalculator/biz/model/recipe/api"
+	"github.com/richsoap/RecipeCalculator/dal/gen"
 )
 
 // DeleteItem .
@@ -16,6 +17,11 @@ func DeleteItem(ctx context.Context, c *app.RequestContext) {
 	var err error
 	var req api.DeleteItemReq
 	err = c.BindAndValidate(&req)
+	if err != nil {
+		c.String(consts.StatusBadRequest, err.Error())
+		return
+	}
+	_, err = gen.Item.WithContext(ctx).Where(gen.Item.ID.Eq(int32(req.GetID()))).Delete()
 	if err != nil {
 		c.String(consts.StatusBadRequest, err.Error())
 		return

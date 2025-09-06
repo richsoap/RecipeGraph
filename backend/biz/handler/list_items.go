@@ -5,9 +5,13 @@ package handler
 import (
 	"context"
 
+	"code.byted.org/lang/gg/gptr"
+	"code.byted.org/lang/gg/gslice"
 	"github.com/cloudwego/hertz/pkg/app"
 	"github.com/cloudwego/hertz/pkg/protocol/consts"
+	"github.com/richsoap/RecipeCalculator/biz/convert"
 	api "github.com/richsoap/RecipeCalculator/biz/model/recipe/api"
+	"github.com/richsoap/RecipeCalculator/dal/gen"
 )
 
 // ListItems .
@@ -21,7 +25,15 @@ func ListItems(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 
+	items, err := gen.Item.WithContext(ctx).Find()
+	if err != nil {
+		c.String(consts.StatusInternalServerError, err.Error())
+		return
+	}
+
 	resp := new(api.ListItemsResp)
+	resp.Data = gslice.Map(items, convert.ConvertItemToApi)
+	resp.Total = gptr.Of(int32(len(items)))
 
 	c.JSON(consts.StatusOK, resp)
 }

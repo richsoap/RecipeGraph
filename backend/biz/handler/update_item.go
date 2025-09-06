@@ -7,7 +7,10 @@ import (
 
 	"github.com/cloudwego/hertz/pkg/app"
 	"github.com/cloudwego/hertz/pkg/protocol/consts"
+	"github.com/richsoap/RecipeCalculator/biz/convert"
 	api "github.com/richsoap/RecipeCalculator/biz/model/recipe/api"
+	"github.com/richsoap/RecipeCalculator/dal/gen"
+	"github.com/richsoap/RecipeCalculator/dal/model"
 )
 
 // UpdateItem .
@@ -20,8 +23,18 @@ func UpdateItem(ctx context.Context, c *app.RequestContext) {
 		c.String(consts.StatusBadRequest, err.Error())
 		return
 	}
+	m := &model.Item{
+		ID:   int32(req.GetID()),
+		Name: req.GetName(),
+	}
+	_, err = gen.Item.WithContext(ctx).Where(gen.Item.ID.Eq(int32(req.GetID()))).Updates(gen.ItemToUpdateMap(m))
+	if err != nil {
+		c.String(consts.StatusBadRequest, err.Error())
+		return
+	}
 
 	resp := new(api.UpdateItemResp)
+	resp.Data = convert.ConvertItemToApi(m)
 
 	c.JSON(consts.StatusOK, resp)
 }

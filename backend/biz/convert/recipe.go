@@ -3,6 +3,7 @@ package convert
 import (
 	"time"
 
+	"github.com/bytedance/gg/gptr"
 	api "github.com/richsoap/RecipeCalculator/biz/model/recipe/api"
 	model "github.com/richsoap/RecipeCalculator/dal/model"
 )
@@ -14,12 +15,12 @@ func ConvertRecipeToApi(recipe *model.Recipe) *api.Recipe {
 	}
 
 	return &api.Recipe{
-		ID:         int64(recipe.ID),
-		Space:      int64(recipe.Space),
-		ItemID:     int64(recipe.ItemID),
-		Efficiency: recipe.Efficiency,
-		CreatedAt:  recipe.CreatedAt.Format(time.RFC3339),
-		UpdatedAt:  recipe.UpdatedAt.Format(time.RFC3339),
+		ID:         gptr.Of(int64(recipe.ID)),
+		Space:      gptr.Of(int64(recipe.Space)),
+		ItemID:     gptr.Of(int64(recipe.ItemID)),
+		Efficiency: gptr.Of(recipe.Efficiency),
+		CreatedAt:  gptr.Of(recipe.CreatedAt.Format(time.RFC3339)),
+		UpdatedAt:  gptr.Of(recipe.UpdatedAt.Format(time.RFC3339)),
 	}
 }
 
@@ -29,21 +30,21 @@ func ConvertRecipeToModel(recipe *api.Recipe) (*model.Recipe, error) {
 		return nil, nil
 	}
 
-	createdAt, err := time.Parse(time.RFC3339, recipe.CreatedAt)
+	createdAt, err := time.Parse(time.RFC3339, recipe.GetCreatedAt())
 	if err != nil {
 		return nil, err
 	}
 
-	updatedAt, err := time.Parse(time.RFC3339, recipe.UpdatedAt)
+	updatedAt, err := time.Parse(time.RFC3339, recipe.GetUpdatedAt())
 	if err != nil {
 		return nil, err
 	}
 
 	return &model.Recipe{
-		ID:         int32(recipe.ID),
-		Space:      int32(recipe.Space),
-		ItemID:     int32(recipe.ItemID),
-		Efficiency: recipe.Efficiency,
+		ID:         int32(recipe.GetID()),
+		Space:      int32(recipe.GetSpace()),
+		ItemID:     int32(recipe.GetItemID()),
+		Efficiency: recipe.GetEfficiency(),
 		CreatedAt:  createdAt,
 		UpdatedAt:  updatedAt,
 	}, nil
