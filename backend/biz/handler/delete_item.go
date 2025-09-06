@@ -21,7 +21,7 @@ func DeleteItem(ctx context.Context, c *app.RequestContext) {
 		c.String(consts.StatusBadRequest, err.Error())
 		return
 	}
-	_, err = gen.Item.WithContext(ctx).Where(gen.Item.ID.Eq(int32(req.GetID()))).Delete()
+	_, err = gen.Item.WithContext(ctx).Where(gen.Item.ID.Eq(req.GetID())).Delete()
 	if err != nil {
 		c.String(consts.StatusBadRequest, err.Error())
 		return

@@ -12,9 +12,9 @@ const TableNameRecipe = "recipes"
 
 // Recipe mapped from table <recipes>
 type Recipe struct {
-	ID         int32     `gorm:"column:id;primaryKey;autoIncrement:true" json:"id"`
+	ID         int64     `gorm:"column:id;primaryKey;autoIncrement:true" json:"id"`
 	Space      int32     `gorm:"column:space;not null" json:"space"`
-	ItemID     int32     `gorm:"column:item_id;not null" json:"item_id"`
+	ItemID     int64     `gorm:"column:item_id;not null" json:"item_id"`
 	Efficiency float64   `gorm:"column:efficiency;not null;default:1.0" json:"efficiency"`
 	CreatedAt  time.Time `gorm:"column:created_at;default:CURRENT_TIMESTAMP" json:"created_at"`
 	UpdatedAt  time.Time `gorm:"column:updated_at;default:CURRENT_TIMESTAMP" json:"updated_at"`

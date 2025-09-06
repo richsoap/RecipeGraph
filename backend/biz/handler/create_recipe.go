@@ -4,10 +4,15 @@ package handler
 
 import (
 	"context"
+	"fmt"
 
+	"code.byted.org/lang/gg/gslice"
 	"github.com/cloudwego/hertz/pkg/app"
 	"github.com/cloudwego/hertz/pkg/protocol/consts"
+	"github.com/richsoap/RecipeCalculator/biz/convert"
 	api "github.com/richsoap/RecipeCalculator/biz/model/recipe/api"
+	"github.com/richsoap/RecipeCalculator/dal/gen"
+	"github.com/richsoap/RecipeCalculator/dal/model"
 )
 
 // CreateRecipe .
@@ -21,7 +26,58 @@ func CreateRecipe(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 
+	ids := gslice.Map(req.GetItems(), (func(item *api.RecipeItem) int64 {
+		return item.GetItem().GetID()
+	}))
+	ids = append(ids, req.GetItemID())
+	items, err := gen.Item.WithContext(ctx).Where(gen.Item.ID.In(ids...)).Find()
+	if err != nil {
+		c.String(consts.StatusBadRequest, err.Error())
+		return
+	}
+	itemMap := gslice.ToMapValues(items, func(item *model.Item) int64 {
+		return item.ID
+	})
+	for _, id := range ids {
+		if _, ok := itemMap[id]; !ok {
+			c.String(consts.StatusBadRequest, "recipe item not found")
+			return
+		}
+	}
+	if _, ok := itemMap[req.GetItemID()]; !ok {
+		c.String(consts.StatusBadRequest, "recipe worker not found")
+		return
+	}
+	recipe := &model.Recipe{
+		Space:      int32(req.GetSpace()),
+		ItemID:     req.GetItemID(),
+		Efficiency: req.GetEfficiency(),
+	}
+	err = gen.Recipe.WithContext(ctx).Create(recipe)
+	if err != nil {
+		err = fmt.Errorf("create recipe failed, err: %v", err)
+		c.String(consts.StatusBadRequest, err.Error())
+		return
+	}
+	recipeItems := gslice.Map(req.GetItems(), (func(item *api.RecipeItem) *model.RecipeItem {
+		return &model.RecipeItem{
+			RecipeID: recipe.ID,
+			ItemID:   item.GetItem().GetID(),
+			Count_:   item.GetCount(),
+		}
+	}))
+	err = gen.RecipeItem.WithContext(ctx).Create(recipeItems...)
+	if err != nil {
+		err = fmt.Errorf("create recipe item failed, err: %v", err)
+		c.String(consts.StatusBadRequest, err.Error())
+		return
+	}
+
 	resp := new(api.CreateRecipeResp)
+	resp.Data = convert.ConvertRecipeToApi(recipe)
+	resp.Data.Items = gslice.Map(recipeItems, (func(item *model.RecipeItem) *api.RecipeItem {
+		return convert.ConvertRecipeItemToApi(item, itemMap[item.ItemID])
+	}))
 
 	c.JSON(consts.StatusOK, resp)
 }

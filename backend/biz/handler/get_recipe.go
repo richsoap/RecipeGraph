@@ -5,9 +5,14 @@ package handler
 import (
 	"context"
 
+	"code.byted.org/lang/gg/gptr"
+	"code.byted.org/lang/gg/gslice"
 	"github.com/cloudwego/hertz/pkg/app"
 	"github.com/cloudwego/hertz/pkg/protocol/consts"
+	"github.com/richsoap/RecipeCalculator/biz/convert"
 	api "github.com/richsoap/RecipeCalculator/biz/model/recipe/api"
+	"github.com/richsoap/RecipeCalculator/dal/gen"
+	"github.com/richsoap/RecipeCalculator/dal/model"
 )
 
 // GetRecipe .
@@ -20,8 +25,35 @@ func GetRecipe(ctx context.Context, c *app.RequestContext) {
 		c.String(consts.StatusBadRequest, err.Error())
 		return
 	}
+	recipe, err := gen.Recipe.WithContext(ctx).Where(gen.Recipe.ID.Eq(req.GetID())).First()
+	if err != nil {
+		c.String(consts.StatusBadRequest, err.Error())
+		return
+	}
+	recipeItems, err := gen.RecipeItem.WithContext(ctx).Where(gen.RecipeItem.RecipeID.Eq(req.GetID())).Find()
+	if err != nil {
+		c.String(consts.StatusBadRequest, err.Error())
+		return
+	}
+	ids := gslice.Map(recipeItems, (func(item *model.RecipeItem) int64 {
+		return item.ItemID
+	}))
+	ids = append(ids, recipe.ItemID)
+	items, err := gen.Item.WithContext(ctx).Where(gen.Item.ID.In(ids...)).Find()
+	if err != nil {
+		c.String(consts.StatusBadRequest, err.Error())
+		return
+	}
+	itemMap := gslice.ToMap(items, func(item *model.Item) (int64, *model.Item) {
+		return item.ID, item
+	})
 
 	resp := new(api.GetRecipeResp)
+	resp.Data = convert.ConvertRecipeToApi(recipe)
+	resp.Data.ItemName = gptr.Of(itemMap[recipe.ItemID].Name)
+	resp.Data.Items = gslice.Map(recipeItems, (func(item *model.RecipeItem) *api.RecipeItem {
+		return convert.ConvertRecipeItemToApi(item, itemMap[item.ItemID])
+	}))
 
 	c.JSON(consts.StatusOK, resp)
 }

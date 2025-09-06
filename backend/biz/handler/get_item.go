@@ -22,7 +22,7 @@ func GetItem(ctx context.Context, c *app.RequestContext) {
 		c.String(consts.StatusBadRequest, err.Error())
 		return
 	}
-	m, err := gen.Item.WithContext(ctx).Where(gen.Item.ID.Eq(int32(req.GetID()))).First()
+	m, err := gen.Item.WithContext(ctx).Where(gen.Item.ID.Eq(req.GetID())).First()
 	if err != nil {
 		c.String(consts.StatusBadRequest, err.Error())
 		return

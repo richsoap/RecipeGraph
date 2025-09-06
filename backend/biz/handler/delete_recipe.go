@@ -4,10 +4,12 @@ package handler
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/cloudwego/hertz/pkg/app"
 	"github.com/cloudwego/hertz/pkg/protocol/consts"
 	api "github.com/richsoap/RecipeCalculator/biz/model/recipe/api"
+	"github.com/richsoap/RecipeCalculator/dal/gen"
 )
 
 // DeleteRecipe .
@@ -17,6 +19,18 @@ func DeleteRecipe(ctx context.Context, c *app.RequestContext) {
 	var req api.DeleteRecipeReq
 	err = c.BindAndValidate(&req)
 	if err != nil {
+		c.String(consts.StatusBadRequest, err.Error())
+		return
+	}
+	_, err = gen.Recipe.WithContext(ctx).Where(gen.Recipe.ID.Eq(req.GetID())).Delete()
+	if err != nil {
+		err = fmt.Errorf("delete recipe failed, err: %v", err)
+		c.String(consts.StatusBadRequest, err.Error())
+		return
+	}
+	_, err = gen.RecipeItem.WithContext(ctx).Where(gen.RecipeItem.RecipeID.Eq(req.GetID())).Delete()
+	if err != nil {
+		err = fmt.Errorf("delete recipe item failed, err: %v", err)
 		c.String(consts.StatusBadRequest, err.Error())
 		return
 	}

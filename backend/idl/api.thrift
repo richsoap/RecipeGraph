@@ -68,9 +68,11 @@ struct Recipe {
     1: optional i64 id,
     2: optional i64 space,
     3: optional i64 item_id,
-    4: optional double efficiency,
-    5: optional string created_at,
-    6: optional string updated_at,
+    4: optional string item_name,
+    5: optional double efficiency,
+    16: optional list<RecipeItem> items,
+    32: optional string created_at,
+    33: optional string updated_at,
 }
 
 enum RecipeItemType {
@@ -108,15 +110,10 @@ struct GetRecipeReq {
 struct GetRecipeResp {
     1: optional BaseResponse base,
     2: optional Recipe data,
-    3: optional list<RecipeItem> items,
 }
 
 struct UpdateRecipeReq {
-    1: optional i64 id (api.path = "id"),
-    2: optional i64 space (api.body = "space"),
-    3: optional i64 item_id (api.body = "item_id"),
-    4: optional double efficiency (api.body = "efficiency"),
-    5: optional list<RecipeItem> items (api.body = "items"),
+    1: optional Recipe data,
 }
 
 struct UpdateRecipeResp {

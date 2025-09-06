@@ -595,12 +595,14 @@ func (p *ListItemsResp) String() string {
 
 // Recipe related structures
 type Recipe struct {
-	ID         *int64   `thrift:"id,1,optional" form:"id" json:"id,omitempty" query:"id"`
-	Space      *int64   `thrift:"space,2,optional" form:"space" json:"space,omitempty" query:"space"`
-	ItemID     *int64   `thrift:"item_id,3,optional" form:"item_id" json:"item_id,omitempty" query:"item_id"`
-	Efficiency *float64 `thrift:"efficiency,4,optional" form:"efficiency" json:"efficiency,omitempty" query:"efficiency"`
-	CreatedAt  *string  `thrift:"created_at,5,optional" form:"created_at" json:"created_at,omitempty" query:"created_at"`
-	UpdatedAt  *string  `thrift:"updated_at,6,optional" form:"updated_at" json:"updated_at,omitempty" query:"updated_at"`
+	ID         *int64        `thrift:"id,1,optional" form:"id" json:"id,omitempty" query:"id"`
+	Space      *int64        `thrift:"space,2,optional" form:"space" json:"space,omitempty" query:"space"`
+	ItemID     *int64        `thrift:"item_id,3,optional" form:"item_id" json:"item_id,omitempty" query:"item_id"`
+	ItemName   *string       `thrift:"item_name,4,optional" form:"item_name" json:"item_name,omitempty" query:"item_name"`
+	Efficiency *float64      `thrift:"efficiency,5,optional" form:"efficiency" json:"efficiency,omitempty" query:"efficiency"`
+	Items      []*RecipeItem `thrift:"items,16,optional" form:"items" json:"items,omitempty" query:"items"`
+	CreatedAt  *string       `thrift:"created_at,32,optional" form:"created_at" json:"created_at,omitempty" query:"created_at"`
+	UpdatedAt  *string       `thrift:"updated_at,33,optional" form:"updated_at" json:"updated_at,omitempty" query:"updated_at"`
 }
 
 func NewRecipe() *Recipe {
@@ -637,6 +639,15 @@ func (p *Recipe) GetItemID() (v int64) {
 	return *p.ItemID
 }
 
+var Recipe_ItemName_DEFAULT string
+
+func (p *Recipe) GetItemName() (v string) {
+	if !p.IsSetItemName() {
+		return Recipe_ItemName_DEFAULT
+	}
+	return *p.ItemName
+}
+
 var Recipe_Efficiency_DEFAULT float64
 
 func (p *Recipe) GetEfficiency() (v float64) {
@@ -644,6 +655,15 @@ func (p *Recipe) GetEfficiency() (v float64) {
 		return Recipe_Efficiency_DEFAULT
 	}
 	return *p.Efficiency
+}
+
+var Recipe_Items_DEFAULT []*RecipeItem
+
+func (p *Recipe) GetItems() (v []*RecipeItem) {
+	if !p.IsSetItems() {
+		return Recipe_Items_DEFAULT
+	}
+	return p.Items
 }
 
 var Recipe_CreatedAt_DEFAULT string
@@ -676,8 +696,16 @@ func (p *Recipe) IsSetItemID() bool {
 	return p.ItemID != nil
 }
 
+func (p *Recipe) IsSetItemName() bool {
+	return p.ItemName != nil
+}
+
 func (p *Recipe) IsSetEfficiency() bool {
 	return p.Efficiency != nil
+}
+
+func (p *Recipe) IsSetItems() bool {
+	return p.Items != nil
 }
 
 func (p *Recipe) IsSetCreatedAt() bool {
@@ -974,9 +1002,8 @@ func (p *GetRecipeReq) String() string {
 }
 
 type GetRecipeResp struct {
-	Base  *BaseResponse `thrift:"base,1,optional" form:"base" json:"base,omitempty" query:"base"`
-	Data  *Recipe       `thrift:"data,2,optional" form:"data" json:"data,omitempty" query:"data"`
-	Items []*RecipeItem `thrift:"items,3,optional" form:"items" json:"items,omitempty" query:"items"`
+	Base *BaseResponse `thrift:"base,1,optional" form:"base" json:"base,omitempty" query:"base"`
+	Data *Recipe       `thrift:"data,2,optional" form:"data" json:"data,omitempty" query:"data"`
 }
 
 func NewGetRecipeResp() *GetRecipeResp {
@@ -1004,25 +1031,12 @@ func (p *GetRecipeResp) GetData() (v *Recipe) {
 	return p.Data
 }
 
-var GetRecipeResp_Items_DEFAULT []*RecipeItem
-
-func (p *GetRecipeResp) GetItems() (v []*RecipeItem) {
-	if !p.IsSetItems() {
-		return GetRecipeResp_Items_DEFAULT
-	}
-	return p.Items
-}
-
 func (p *GetRecipeResp) IsSetBase() bool {
 	return p.Base != nil
 }
 
 func (p *GetRecipeResp) IsSetData() bool {
 	return p.Data != nil
-}
-
-func (p *GetRecipeResp) IsSetItems() bool {
-	return p.Items != nil
 }
 
 func (p *GetRecipeResp) String() string {
@@ -1033,11 +1047,7 @@ func (p *GetRecipeResp) String() string {
 }
 
 type UpdateRecipeReq struct {
-	ID         *int64        `thrift:"id,1,optional" json:"id,omitempty" path:"id"`
-	Space      *int64        `thrift:"space,2,optional" form:"space" json:"space,omitempty"`
-	ItemID     *int64        `thrift:"item_id,3,optional" form:"item_id" json:"item_id,omitempty"`
-	Efficiency *float64      `thrift:"efficiency,4,optional" form:"efficiency" json:"efficiency,omitempty"`
-	Items      []*RecipeItem `thrift:"items,5,optional" form:"items" json:"items,omitempty"`
+	Data *Recipe `thrift:"data,1,optional" form:"data" json:"data,omitempty" query:"data"`
 }
 
 func NewUpdateRecipeReq() *UpdateRecipeReq {
@@ -1047,69 +1057,17 @@ func NewUpdateRecipeReq() *UpdateRecipeReq {
 func (p *UpdateRecipeReq) InitDefault() {
 }
 
-var UpdateRecipeReq_ID_DEFAULT int64
+var UpdateRecipeReq_Data_DEFAULT *Recipe
 
-func (p *UpdateRecipeReq) GetID() (v int64) {
-	if !p.IsSetID() {
-		return UpdateRecipeReq_ID_DEFAULT
+func (p *UpdateRecipeReq) GetData() (v *Recipe) {
+	if !p.IsSetData() {
+		return UpdateRecipeReq_Data_DEFAULT
 	}
-	return *p.ID
+	return p.Data
 }
 
-var UpdateRecipeReq_Space_DEFAULT int64
-
-func (p *UpdateRecipeReq) GetSpace() (v int64) {
-	if !p.IsSetSpace() {
-		return UpdateRecipeReq_Space_DEFAULT
-	}
-	return *p.Space
-}
-
-var UpdateRecipeReq_ItemID_DEFAULT int64
-
-func (p *UpdateRecipeReq) GetItemID() (v int64) {
-	if !p.IsSetItemID() {
-		return UpdateRecipeReq_ItemID_DEFAULT
-	}
-	return *p.ItemID
-}
-
-var UpdateRecipeReq_Efficiency_DEFAULT float64
-
-func (p *UpdateRecipeReq) GetEfficiency() (v float64) {
-	if !p.IsSetEfficiency() {
-		return UpdateRecipeReq_Efficiency_DEFAULT
-	}
-	return *p.Efficiency
-}
-
-var UpdateRecipeReq_Items_DEFAULT []*RecipeItem
-
-func (p *UpdateRecipeReq) GetItems() (v []*RecipeItem) {
-	if !p.IsSetItems() {
-		return UpdateRecipeReq_Items_DEFAULT
-	}
-	return p.Items
-}
-
-func (p *UpdateRecipeReq) IsSetID() bool {
-	return p.ID != nil
-}
-
-func (p *UpdateRecipeReq) IsSetSpace() bool {
-	return p.Space != nil
-}
-
-func (p *UpdateRecipeReq) IsSetItemID() bool {
-	return p.ItemID != nil
-}
-
-func (p *UpdateRecipeReq) IsSetEfficiency() bool {
-	return p.Efficiency != nil
-}
-
-func (p *UpdateRecipeReq) IsSetItems() bool {
-	return p.Items != nil
+func (p *UpdateRecipeReq) IsSetData() bool {
+	return p.Data != nil
 }
 
 func (p *UpdateRecipeReq) String() string {

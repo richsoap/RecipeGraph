@@ -43,11 +43,11 @@ func ConvertRecipeItemToModel(recipeItem *api.RecipeItem) (*model.RecipeItem, er
 	}
 
 	return &model.RecipeItem{
-		ID:        int32(recipeItem.GetID()),
-		RecipeID:  int32(recipeItem.GetRecipeID()),
+		ID:        recipeItem.GetID(),
+		RecipeID:  recipeItem.GetRecipeID(),
 		Space:     int32(recipeItem.GetSpace()),
 		Type:      int32(recipeItem.GetType()),
-		ItemID:    int32(recipeItem.GetItem().GetID()),
+		ItemID:    recipeItem.GetItem().GetID(),
 		Count_:    recipeItem.GetCount(),
 		CreatedAt: createdAt,
 		UpdatedAt: updatedAt,

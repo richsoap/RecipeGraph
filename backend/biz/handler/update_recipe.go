@@ -4,24 +4,89 @@ package handler
 
 import (
 	"context"
+	"fmt"
 
+	"code.byted.org/lang/gg/gslice"
 	"github.com/cloudwego/hertz/pkg/app"
 	"github.com/cloudwego/hertz/pkg/protocol/consts"
+	"github.com/richsoap/RecipeCalculator/biz/convert"
 	api "github.com/richsoap/RecipeCalculator/biz/model/recipe/api"
+	"github.com/richsoap/RecipeCalculator/dal/gen"
+	"github.com/richsoap/RecipeCalculator/dal/model"
 )
 
-// UpdateRecipe .
+// UpdateRecipe 更新配方信息
 // @router /api/v1/recipes/:id [PUT]
 func UpdateRecipe(ctx context.Context, c *app.RequestContext) {
 	var err error
 	var req api.UpdateRecipeReq
+	// 绑定并验证请求参数
 	err = c.BindAndValidate(&req)
 	if err != nil {
 		c.String(consts.StatusBadRequest, err.Error())
 		return
 	}
+	// 构建配方更新数据
+	recipe := &model.Recipe{
+		Efficiency: req.GetData().GetEfficiency(),
+		ItemID:     req.GetData().GetItemID(),
+	}
+	// 更新配方基本信息
+	_, err = gen.Recipe.WithContext(ctx).Where(gen.Recipe.ID.Eq(req.GetData().GetID())).Updates(gen.RecipeToUpdateMap(recipe))
+	if err != nil {
+		err = fmt.Errorf("UpdateRecipe err: %v", err)
+		c.String(consts.StatusBadRequest, err.Error())
+		return
+	}
 
+	// 提取请求中所有物品的ID
+	ids := gslice.Map(req.GetData().GetItems(), (func(item *api.RecipeItem) int64 {
+		return item.GetItem().GetID()
+	}))
+	// 查询所有相关的物品信息
+	items, err := gen.Item.WithContext(ctx).Where(gen.Item.ID.In(ids...)).Find()
+	if err != nil {
+		err = fmt.Errorf("FindItems err: %v", err)
+		c.String(consts.StatusBadRequest, err.Error())
+		return
+	}
+	// 将物品列表转换为ID到物品的映射，便于快速查找
+	itemMap := gslice.ToMap(items, func(item *model.Item) (int64, *model.Item) {
+		return item.ID, item
+	})
+	// 验证请求中的所有物品是否都存在于数据库中
+	for _, item := range req.GetData().GetItems() {
+		if _, ok := itemMap[item.GetItem().GetID()]; !ok {
+			err = fmt.Errorf("item not found: %v", item.GetItem().GetID())
+			c.String(consts.StatusBadRequest, err.Error())
+			return
+		}
+	}
+
+	// 删除配方物品关联记录
+	_, err = gen.RecipeItem.WithContext(ctx).Where(gen.RecipeItem.RecipeID.Eq(req.GetData().GetID())).Delete()
+	if err != nil {
+		err = fmt.Errorf("DeleteRecipeItem err: %v", err)
+		c.String(consts.StatusBadRequest, err.Error())
+		return
+	}
+
+	// 将API模型转换为数据库模型
+	recipeItems := gslice.Map(req.GetData().GetItems(), (func(item *api.RecipeItem) *model.RecipeItem {
+		m, _ := convert.ConvertRecipeItemToModel(item)
+		return m
+	}))
+	// 批量创建新的配方物品关联记录
+	err = gen.RecipeItem.WithContext(ctx).Create(recipeItems...)
+	if err != nil {
+		err = fmt.Errorf("InsertRecipeItem err: %v", err)
+		c.String(consts.StatusBadRequest, err.Error())
+		return
+	}
+
+	// 构建响应数据
 	resp := new(api.UpdateRecipeResp)
 
+	// 返回成功响应
 	c.JSON(consts.StatusOK, resp)
 }

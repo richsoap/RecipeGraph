@@ -28,7 +28,7 @@ func newItem(db *gorm.DB, opts ...gen.DOOption) item {
 
 	tableName := _item.itemDo.TableName()
 	_item.ALL = field.NewAsterisk(tableName)
-	_item.ID = field.NewInt32(tableName, "id")
+	_item.ID = field.NewInt64(tableName, "id")
 	_item.Name = field.NewString(tableName, "name")
 	_item.CreatedAt = field.NewTime(tableName, "created_at")
 	_item.UpdatedAt = field.NewTime(tableName, "updated_at")
@@ -42,7 +42,7 @@ type item struct {
 	itemDo
 
 	ALL       field.Asterisk
-	ID        field.Int32
+	ID        field.Int64
 	Name      field.String
 	CreatedAt field.Time
 	UpdatedAt field.Time
@@ -62,7 +62,7 @@ func (i item) As(alias string) *item {
 
 func (i *item) updateTableName(table string) *item {
 	i.ALL = field.NewAsterisk(table)
-	i.ID = field.NewInt32(table, "id")
+	i.ID = field.NewInt64(table, "id")
 	i.Name = field.NewString(table, "name")
 	i.CreatedAt = field.NewTime(table, "created_at")
 	i.UpdatedAt = field.NewTime(table, "updated_at")

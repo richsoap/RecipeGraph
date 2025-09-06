@@ -28,11 +28,11 @@ func newRecipeItem(db *gorm.DB, opts ...gen.DOOption) recipeItem {
 
 	tableName := _recipeItem.recipeItemDo.TableName()
 	_recipeItem.ALL = field.NewAsterisk(tableName)
-	_recipeItem.ID = field.NewInt32(tableName, "id")
-	_recipeItem.RecipeID = field.NewInt32(tableName, "recipe_id")
+	_recipeItem.ID = field.NewInt64(tableName, "id")
+	_recipeItem.RecipeID = field.NewInt64(tableName, "recipe_id")
 	_recipeItem.Space = field.NewInt32(tableName, "space")
 	_recipeItem.Type = field.NewInt32(tableName, "type")
-	_recipeItem.ItemID = field.NewInt32(tableName, "item_id")
+	_recipeItem.ItemID = field.NewInt64(tableName, "item_id")
 	_recipeItem.Count_ = field.NewInt32(tableName, "count")
 	_recipeItem.CreatedAt = field.NewTime(tableName, "created_at")
 	_recipeItem.UpdatedAt = field.NewTime(tableName, "updated_at")
@@ -46,11 +46,11 @@ type recipeItem struct {
 	recipeItemDo
 
 	ALL       field.Asterisk
-	ID        field.Int32
-	RecipeID  field.Int32
+	ID        field.Int64
+	RecipeID  field.Int64
 	Space     field.Int32
 	Type      field.Int32
-	ItemID    field.Int32
+	ItemID    field.Int64
 	Count_    field.Int32
 	CreatedAt field.Time
 	UpdatedAt field.Time
@@ -70,11 +70,11 @@ func (r recipeItem) As(alias string) *recipeItem {
 
 func (r *recipeItem) updateTableName(table string) *recipeItem {
 	r.ALL = field.NewAsterisk(table)
-	r.ID = field.NewInt32(table, "id")
-	r.RecipeID = field.NewInt32(table, "recipe_id")
+	r.ID = field.NewInt64(table, "id")
+	r.RecipeID = field.NewInt64(table, "recipe_id")
 	r.Space = field.NewInt32(table, "space")
 	r.Type = field.NewInt32(table, "type")
-	r.ItemID = field.NewInt32(table, "item_id")
+	r.ItemID = field.NewInt64(table, "item_id")
 	r.Count_ = field.NewInt32(table, "count")
 	r.CreatedAt = field.NewTime(table, "created_at")
 	r.UpdatedAt = field.NewTime(table, "updated_at")

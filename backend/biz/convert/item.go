@@ -39,7 +39,7 @@ func ConvertItemToModel(item *api.Item) (*model.Item, error) {
 	}
 
 	return &model.Item{
-		ID:        int32(item.GetID()),
+		ID:        item.GetID(),
 		Name:      item.GetName(),
 		CreatedAt: createdAt,
 		UpdatedAt: updatedAt,

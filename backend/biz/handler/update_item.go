@@ -24,10 +24,10 @@ func UpdateItem(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 	m := &model.Item{
-		ID:   int32(req.GetID()),
+		ID:   req.GetID(),
 		Name: req.GetName(),
 	}
-	_, err = gen.Item.WithContext(ctx).Where(gen.Item.ID.Eq(int32(req.GetID()))).Updates(gen.ItemToUpdateMap(m))
+	_, err = gen.Item.WithContext(ctx).Where(gen.Item.ID.Eq(req.GetID())).Updates(gen.ItemToUpdateMap(m))
 	if err != nil {
 		c.String(consts.StatusBadRequest, err.Error())
 		return

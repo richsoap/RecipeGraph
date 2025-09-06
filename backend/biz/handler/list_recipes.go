@@ -5,23 +5,93 @@ package handler
 import (
 	"context"
 
+	"code.byted.org/lang/gg/gptr"
+	"code.byted.org/lang/gg/gslice"
 	"github.com/cloudwego/hertz/pkg/app"
 	"github.com/cloudwego/hertz/pkg/protocol/consts"
+	"github.com/richsoap/RecipeCalculator/biz/convert"
 	api "github.com/richsoap/RecipeCalculator/biz/model/recipe/api"
+	"github.com/richsoap/RecipeCalculator/dal/gen"
+	"github.com/richsoap/RecipeCalculator/dal/model"
 )
 
-// ListRecipes .
+// ListRecipes 获取所有配方列表
 // @router /api/v1/recipes [GET]
 func ListRecipes(ctx context.Context, c *app.RequestContext) {
 	var err error
 	var req api.ListRecipesReq
+	// 绑定并验证请求参数
 	err = c.BindAndValidate(&req)
 	if err != nil {
 		c.String(consts.StatusBadRequest, err.Error())
 		return
 	}
 
-	resp := new(api.ListRecipesResp)
+	// 查询所有配方
+	recipes, err := gen.Recipe.WithContext(ctx).Find()
+	if err != nil {
+		c.String(consts.StatusBadRequest, err.Error())
+		return
+	}
 
+	// 提取所有配方ID
+	recipeIDs := gslice.Map(recipes, func(recipe *model.Recipe) int64 {
+		return recipe.ID
+	})
+
+	// 查询所有配方的物品关联记录
+	recipeItems, err := gen.RecipeItem.WithContext(ctx).Where(gen.RecipeItem.RecipeID.In(recipeIDs...)).Find()
+	if err != nil {
+		c.String(consts.StatusBadRequest, err.Error())
+		return
+	}
+
+	// 提取所有相关的物品ID（包括配方产出物品和配方物品）
+	itemIDs := gslice.Map(recipes, func(recipe *model.Recipe) int64 {
+		return recipe.ItemID
+	})
+	recipeItemIDs := gslice.Map(recipeItems, func(item *model.RecipeItem) int64 {
+		return item.ItemID
+	})
+	itemIDs = append(itemIDs, recipeItemIDs...)
+
+	// 查询所有相关物品信息
+	items, err := gen.Item.WithContext(ctx).Where(gen.Item.ID.In(itemIDs...)).Find()
+	if err != nil {
+		c.String(consts.StatusBadRequest, err.Error())
+		return
+	}
+
+	// 构建物品ID到物品的映射
+	itemMap := gslice.ToMap(items, func(item *model.Item) (int64, *model.Item) {
+		return item.ID, item
+	})
+
+	// 构建配方ID到配方物品列表的映射
+	recipeItemMap := gslice.GroupBy(recipeItems, func(item *model.RecipeItem) int64 {
+		return item.RecipeID
+	})
+
+	// 构建响应数据
+	resp := new(api.ListRecipesResp)
+	resp.Data = gslice.Map(recipes, func(recipe *model.Recipe) *api.Recipe {
+		// 转换配方基本信息
+		apiRecipe := convert.ConvertRecipeToApi(recipe)
+		// 设置配方产出物品名称
+		if item, ok := itemMap[recipe.ItemID]; ok {
+			apiRecipe.ItemName = gptr.Of(item.Name)
+		}
+		// 设置配方物品列表
+		if items, ok := recipeItemMap[recipe.ID]; ok {
+			apiRecipe.Items = gslice.Map(items, func(item *model.RecipeItem) *api.RecipeItem {
+				return convert.ConvertRecipeItemToApi(item, itemMap[item.ItemID])
+			})
+		} else {
+			apiRecipe.Items = []*api.RecipeItem{}
+		}
+		return apiRecipe
+	})
+
+	// 返回成功响应
 	c.JSON(consts.StatusOK, resp)
 }

@@ -28,9 +28,9 @@ func newRecipe(db *gorm.DB, opts ...gen.DOOption) recipe {
 
 	tableName := _recipe.recipeDo.TableName()
 	_recipe.ALL = field.NewAsterisk(tableName)
-	_recipe.ID = field.NewInt32(tableName, "id")
+	_recipe.ID = field.NewInt64(tableName, "id")
 	_recipe.Space = field.NewInt32(tableName, "space")
-	_recipe.ItemID = field.NewInt32(tableName, "item_id")
+	_recipe.ItemID = field.NewInt64(tableName, "item_id")
 	_recipe.Efficiency = field.NewFloat64(tableName, "efficiency")
 	_recipe.CreatedAt = field.NewTime(tableName, "created_at")
 	_recipe.UpdatedAt = field.NewTime(tableName, "updated_at")
@@ -44,9 +44,9 @@ type recipe struct {
 	recipeDo
 
 	ALL        field.Asterisk
-	ID         field.Int32
+	ID         field.Int64
 	Space      field.Int32
-	ItemID     field.Int32
+	ItemID     field.Int64
 	Efficiency field.Float64
 	CreatedAt  field.Time
 	UpdatedAt  field.Time
@@ -66,9 +66,9 @@ func (r recipe) As(alias string) *recipe {
 
 func (r *recipe) updateTableName(table string) *recipe {
 	r.ALL = field.NewAsterisk(table)
-	r.ID = field.NewInt32(table, "id")
+	r.ID = field.NewInt64(table, "id")
 	r.Space = field.NewInt32(table, "space")
-	r.ItemID = field.NewInt32(table, "item_id")
+	r.ItemID = field.NewInt64(table, "item_id")
 	r.Efficiency = field.NewFloat64(table, "efficiency")
 	r.CreatedAt = field.NewTime(table, "created_at")
 	r.UpdatedAt = field.NewTime(table, "updated_at")

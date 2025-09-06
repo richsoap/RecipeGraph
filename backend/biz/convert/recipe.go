@@ -41,9 +41,9 @@ func ConvertRecipeToModel(recipe *api.Recipe) (*model.Recipe, error) {
 	}
 
 	return &model.Recipe{
-		ID:         int32(recipe.GetID()),
+		ID:         recipe.GetID(),
 		Space:      int32(recipe.GetSpace()),
-		ItemID:     int32(recipe.GetItemID()),
+		ItemID:     recipe.GetItemID(),
 		Efficiency: recipe.GetEfficiency(),
 		CreatedAt:  createdAt,
 		UpdatedAt:  updatedAt,
