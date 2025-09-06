@@ -44,22 +44,3 @@ func ConvertItemToModel(item *api.Item) (*model.Item, error) {
 		UpdatedAt: updatedAt,
 	}, nil
 }
-
-/*
-package api
-type Item struct {
-	ID        int64  `thrift:"id,1" form:"id" json:"id" query:"id"`
-	Name      string `thrift:"name,2" form:"name" json:"name" query:"name"`
-	CreatedAt string `thrift:"created_at,3" form:"created_at" json:"created_at" query:"created_at"`
-	UpdatedAt string `thrift:"updated_at,4" form:"updated_at" json:"updated_at" query:"updated_at"`
-}
-
-package model
-type Item struct {
-	ID        int32     `gorm:"column:id;primaryKey;autoIncrement:true" json:"id"`
-	Name      string    `gorm:"column:name" json:"name"`
-	CreatedAt time.Time `gorm:"column:created_at;default:CURRENT_TIMESTAMP" json:"created_at"`
-	UpdatedAt time.Time `gorm:"column:updated_at;default:CURRENT_TIMESTAMP" json:"updated_at"`
-}
-
-*/
